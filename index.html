@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BuscaPatas IA V14 FIX</title>
+<title>BuscaPatas V16 FIX</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui}
 body{background:#f6f6f3}
 header{background:#111;color:#fff;padding:14px 20px;display:flex;justify-content:space-between}
-#map{height:42vh;z-index:1}
+#map{height:42vh}
 .top{padding:8px 16px;display:flex;justify-content:space-between;background:#fff}
 .dona{background:#fffbe6;border:1px solid #ffe600;border-radius:14px;padding:10px;margin:8px 16px;text-align:center}
 .aliasBtn{background:#111;color:#ffe600;padding:8px 16px;border-radius:10px;display:inline-block;font-weight:900;border:2px dashed #ffe600;cursor:pointer}
@@ -49,19 +49,17 @@ header{background:#111;color:#fff;padding:14px 20px;display:flex;justify-content
 .compara{display:flex;gap:8px;margin-top:8px}
 .compara div{flex:1;text-align:center}
 .compara img{width:100%;height:90px;border-radius:10px;object-fit:cover}
-.ia-bar{height:6px;background:#eee;border-radius:99px;margin-top:4px;overflow:hidden}
-.ia-bar div{height:100%;background:#2e7d32}
 </style>
 </head>
 <body>
-<header><h1>🐾 BuscaPatas IA V14</h1><span id="ubiTxt" style="font-size:11px;color:#ffe600">FIX PERDIDO</span></header>
+<header><h1>🐾 BuscaPatas V16 FIX</h1><span id="ubiTxt" style="font-size:11px;color:#ffe600">FIX SUBIDA</span></header>
 <div id="map"></div>
-<div class="top"><span id="filtroTxt" style="font-size:11px;color:#999">Tocá el mapa con el dedo 👇</span><a onclick="openModal('modalInfo')" style="font-size:12px;color:#777;text-decoration:underline">¿Cómo funciona?</a></div>
+<div class="top"><span id="filtroTxt" style="font-size:11px;color:#999">Tocá el mapa con el dedo 👇</span><a onclick="openModal('modalInfo')" style="font-size:12px;color:#777;text-decoration:underline">Info</a></div>
 <div class="ia-barra">
-<button class="btn-ia-todo" onclick="buscarTodoConIA()">🔍 BUSCAR IA EN TODA LA PÁGINA</button>
+<button class="btn-ia-todo" onclick="buscarTodoConIA()">🔍 BUSCAR IA TODA LA PÁGINA</button>
 <button class="btn-ia-foto" onclick="abrirSoloFoto()">📸 SOLO FOTO</button>
 </div>
-<div class="dona"><div style="font-size:11px">💛 A voluntad</div><div class="aliasBtn" onclick="copiarAlias()">BUSCAPATASDONACION</div></div>
+<div class="dona"><div class="aliasBtn" onclick="copiarAlias()">BUSCAPATASDONACION</div></div>
 <div class="controls">
 <button class="btn-perdido" onclick="abrirForm('PERDIDO')">+ PERDÍ</button>
 <button class="btn-encontrado" onclick="abrirForm('ENCONTRADO')">+ ENCONTRÉ</button>
@@ -75,33 +73,42 @@ header{background:#111;color:#fff;padding:14px 20px;display:flex;justify-content
 </div>
 <div class="list" id="lista"></div>
 
-<div id="modalMapa" class="modal-bg"><div class="modal-box" style="text-align:center"><h2>📍 ¿Qué pasó acá?</h2><p id="coordTxt"></p><div class="opcionesMap"><button class="btn-perdido" onclick="desdeMapa('PERDIDO')">😢 PERDÍ acá donde toqué</button><button class="btn-encontrado" onclick="desdeMapa('ENCONTRADO')">🙏 ENCONTRÉ acá</button><button class="btn-abandonado" onclick="desdeMapa('ABANDONADO')">💔 ABANDONADO acá</button><button class="btn-cancel" style="padding:12px;border-radius:12px;border:none" onclick="closeModal('modalMapa')">Cancelar</button></div></div></div>
-<div id="formModal" class="modal-bg"><div class="modal-box"><h2 id="formTitle"></h2><p id="formSub">La IA buscará en TODA la página</p><label>Nombre</label><input id="fNombre" placeholder="Milo"><label>Descripción</label><textarea id="fDesc" rows="2" placeholder="Marrón, chiquito..."></textarea><label>WhatsApp</label><input id="fContacto" placeholder="2983..."><label>Foto 📸</label><input type="file" accept="image/*" onchange="previewFoto(event)"><div class="fotoWrap" id="fotoWrap"><img id="fotoPrev"></div><label>Ubicación (donde tocaste o tu ubicación)</label><input id="fLatLng" readonly><div class="btns"><button class="btn-cancel" onclick="closeModal('formModal')">Después</button><button class="btn-send" id="btnSend" onclick="guardar()">SUBIR AL MAPA</button></div></div></div>
-<div id="soloFotoModal" class="modal-bg"><div class="modal-box" style="text-align:center"><h2>📸 Solo foto</h2><p>Busca en toda la página</p><input type="file" accept="image/*" onchange="buscarSoloConFoto(event)"><div class="fotoWrap" id="fotoWrap2" style="display:none;margin-top:10px"><img id="fotoPrev2"></div><button class="btn-cancel" style="width:100%;margin-top:12px;padding:12px;border-radius:999px;border:none" onclick="closeModal('soloFotoModal')">Cerrar</button></div></div>
-<div id="modalMatch" class="modal-bg"><div class="modal-box"><h2 id="matchTitle"></h2><p id="matchSub"></p><div id="matchLista"></div><div id="noResultActions"></div><button onclick="closeModal('modalMatch')" style="margin-top:12px;width:100%;padding:12px;border-radius:999px;border:none;background:#111;color:#fff">Cerrar</button></div></div>
-<div id="modalInfo" class="modal-bg"><div class="modal-box"><h3>Cómo funciona</h3><br><p style="font-size:13px;color:#444">Tocá el mapa con el dedo. La IA busca en toda la página. Si no tocaste, usa tu ubicación.</p><button onclick="closeModal('modalInfo')" style="margin-top:12px;width:100%;padding:12px;border-radius:999px;border:none;background:#111;color:#fff">Listo</button></div></div>
+<div id="modalMapa" class="modal-bg"><div class="modal-box" style="text-align:center"><h2>📍 ¿Qué pasó acá?</h2><p id="coordTxt"></p><div class="opcionesMap"><button class="btn-perdido" onclick="desdeMapa('PERDIDO')">😢 PERDÍ acá</button><button class="btn-encontrado" onclick="desdeMapa('ENCONTRADO')">🙏 ENCONTRÉ acá</button><button class="btn-abandonado" onclick="desdeMapa('ABANDONADO')">💔 ABANDONADO acá</button><button class="btn-cancel" style="padding:12px;border-radius:12px;border:none" onclick="closeModal('modalMapa')">Cancelar</button></div></div></div>
+
+<div id="formModal" class="modal-bg"><div class="modal-box">
+<h2 id="formTitle"></h2>
+<p id="formSub">Se subirá donde tocaste</p>
+<label>Nombre</label><input id="fNombre">
+<label>Descripción</label><textarea id="fDesc" rows="2"></textarea>
+<label>WhatsApp</label><input id="fContacto">
+<label>Foto 📸 (se comprime sola)</label><input type="file" accept="image/*" onchange="previewFoto(event)">
+<div class="fotoWrap" id="fotoWrap"><img id="fotoPrev"></div>
+<label>Ubicación</label><input id="fLatLng" readonly>
+<div class="btns"><button class="btn-cancel" onclick="closeModal('formModal')">Cancelar</button><button class="btn-send" id="btnSend" onclick="guardar()">SUBIR AL MAPA AHORA</button></div>
+</div></div>
+
+<div id="soloFotoModal" class="modal-bg"><div class="modal-box" style="text-align:center"><h2>📸 Solo foto</h2><input type="file" accept="image/*" onchange="buscarSoloConFoto(event)"><div class="fotoWrap" id="fotoWrap2" style="display:none;margin-top:10px"><img id="fotoPrev2"></div><button class="btn-cancel" style="width:100%;margin-top:12px;padding:12px;border-radius:999px;border:none" onclick="closeModal('soloFotoModal')">Cerrar</button></div></div>
+
+<div id="modalMatch" class="modal-bg"><div class="modal-box">
+<h2 id="matchTitle"></h2><p id="matchSub"></p><div id="matchLista"></div><div id="noResultActions"></div>
+<button onclick="closeModal('modalMatch')" style="margin-top:12px;width:100%;padding:12px;border-radius:999px;border:none;background:#111;color:#fff">Cerrar</button>
+</div></div>
+
+<div id="modalInfo" class="modal-bg"><div class="modal-box"><h3>Info</h3><p style="font-size:13px">Tocá mapa, subí foto, IA busca en toda la página</p><button onclick="closeModal('modalInfo')" style="margin-top:12px;width:100%;padding:12px;border-radius:999px;border:none;background:#111;color:#fff">Listo</button></div></div>
 
 <script>
 const map=L.map('map').setView([-38.375,-60.275],13);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-
-// KEY UNICA PARA QUE NO SE PIERDA
 let KEY='buscapatas';
-let mascotas=JSON.parse(localStorage.getItem(KEY)||'[]');
+let mascotas=[];
+try{mascotas=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){mascotas=[]}
 let currentTipo='PERDIDO', tempLatLng=null, tempFoto=null, userPos=null, filtro='TODOS', tempHash=null;
 
 function openModal(id){document.getElementById(id).style.display='flex'}
 function closeModal(id){document.getElementById(id).style.display='none'}
 function abrirSoloFoto(){openModal('soloFotoModal')}
 
-if(navigator.geolocation){
- navigator.geolocation.getCurrentPosition(p=>{
-  userPos={lat:p.coords.latitude,lng:p.coords.longitude};
-  document.getElementById('ubiTxt').innerText='📍 IA lista';
-  map.setView(userPos,14);
-  render();
- },()=>render());
-}else render();
+if(navigator.geolocation){navigator.geolocation.getCurrentPosition(p=>{userPos={lat:p.coords.latitude,lng:p.coords.longitude};map.setView(userPos,14);render()},()=>render())}else render();
 
 map.on('click',e=>{
  tempLatLng={lat:e.latlng.lat,lng:e.latlng.lng};
@@ -111,31 +118,40 @@ map.on('click',e=>{
 });
 
 function desdeMapa(t){closeModal('modalMapa');abrirForm(t);}
-
 function abrirForm(t){
  currentTipo=t;
- // FIX: SI NO HAY UBICACION, USA CENTRO DEL MAPA
  if(!tempLatLng){
    if(userPos) tempLatLng=userPos;
    else {let c=map.getCenter(); tempLatLng={lat:c.lat,lng:c.lng};}
  }
- document.getElementById('formTitle').innerText = t=='PERDIDO'?'😢 ¿A quién perdiste?':t=='ENCONTRADO'?'🙏 ¿A quién encontraste?':'💔 Abandonado';
- document.getElementById('formSub').innerText = 'Se guardará donde tocaste: '+tempLatLng.lat.toFixed(4)+','+tempLatLng.lng.toFixed(4);
+ document.getElementById('formTitle').innerText = t;
+ document.getElementById('formSub').innerText = 'Donde tocaste: '+tempLatLng.lat.toFixed(4);
  document.getElementById('fLatLng').value=tempLatLng.lat.toFixed(5)+','+tempLatLng.lng.toFixed(5);
- document.getElementById('btnSend').innerText='SUBIR COMO '+t+' AL MAPA';
+ document.getElementById('btnSend').innerText='SUBIR COMO '+t;
  openModal('formModal');
 }
 
+// COMPRIME FOTO - FIX CLAVE
 function previewFoto(ev){
  const file=ev.target.files[0]; if(!file) return;
- const r=new FileReader();
- r.onload=e=>{
-  tempFoto=e.target.result;
-  document.getElementById('fotoPrev').src=tempFoto;
-  document.getElementById('fotoWrap').style.display='block';
-  calcularHashIA(tempFoto,h=>tempHash=h);
+ const reader=new FileReader();
+ reader.onload=e=>{
+   const img=new Image();
+   img.onload=()=>{
+     const canvas=document.createElement('canvas');
+     let w=img.width, h=img.height;
+     const max=500;
+     if(w>h){ if(w>max){ h*=max/w; w=max; } } else { if(h>max){ w*=max/h; h=max; } }
+     canvas.width=w; canvas.height=h;
+     canvas.getContext('2d').drawImage(img,0,0,w,h);
+     tempFoto=canvas.toDataURL('image/jpeg',0.6);
+     document.getElementById('fotoPrev').src=tempFoto;
+     document.getElementById('fotoWrap').style.display='block';
+     calcularHashIA(tempFoto,h=>tempHash=h);
+   };
+   img.src=e.target.result;
  };
- r.readAsDataURL(file);
+ reader.readAsDataURL(file);
 }
 
 function calcularHashIA(dataUrl,cb){
@@ -150,43 +166,13 @@ function calcularHashIA(dataUrl,cb){
  };
  img.src=dataUrl;
 }
+function compararIA(h1,h2){if(!h1||!h2)return 0;let diff=0;for(let i=0;i<h1.hash.length;i++)diff+=Math.abs(h1.hash[i]-h2.hash[i]);let s=Math.max(0,100-diff/10);let cd=Math.abs(h1.color[0]-h2.color[0])+Math.abs(h1.color[1]-h2.color[1])+Math.abs(h1.color[2]-h2.color[2]);s-=cd/3;return Math.max(0,Math.min(98,s))}
+function distancia(a,b){const R=6371;const dLat=(b.lat-a.lat)*Math.PI/180;const dLng=(b.lng-a.lng)*Math.PI/180;const h=Math.sin(dLat/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLng/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
+function scoreTotal(p,e){let score=0;let motivos=[];let sFoto=compararIA(p.iaHash,e.iaHash);if(sFoto>15){score+=sFoto*0.7;motivos.push(`IA ${Math.round(sFoto)}%`)}let txtP=(p.nombre+' '+p.desc).toLowerCase();let txtE=(e.nombre+' '+e.desc).toLowerCase();let pal=txtP.split(/[\s,]+/).filter(w=>w.length>3);let com=0;pal.forEach(w=>{if(txtE.includes(w)){com++;score+=12}});if(com>0)motivos.push(com+' rasgos');let km=distancia(p,e);motivos.push(km.toFixed(1)+'km');return{score:Math.min(Math.round(score),98),motivos,km}}
 
-function compararIA(h1,h2){
- if(!h1||!h2) return 0;
- let diff=0;
- for(let i=0;i<h1.hash.length;i++)diff+=Math.abs(h1.hash[i]-h2.hash[i]);
- let s=Math.max(0,100-diff/10);
- let cd=Math.abs(h1.color[0]-h2.color[0])+Math.abs(h1.color[1]-h2.color[1])+Math.abs(h1.color[2]-h2.color[2]);
- s-=cd/3;
- return Math.max(0,Math.min(98,s));
-}
-
-function distancia(a,b){
- const R=6371;
- const dLat=(b.lat-a.lat)*Math.PI/180;
- const dLng=(b.lng-a.lng)*Math.PI/180;
- const h=Math.sin(dLat/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLng/2)**2;
- return 2*R*Math.asin(Math.sqrt(h));
-}
-
-function scoreTotal(p,e){
- let score=0;let motivos=[];
- let sFoto=compararIA(p.iaHash,e.iaHash);
- if(sFoto>15){score+=sFoto*0.7;motivos.push(`IA ${Math.round(sFoto)}%`)}
- let txtP=(p.nombre+' '+p.desc).toLowerCase();
- let txtE=(e.nombre+' '+e.desc).toLowerCase();
- let pal=txtP.split(/[\s,]+/).filter(w=>w.length>3);
- let com=0;
- pal.forEach(w=>{if(txtE.includes(w)){com++;score+=12}});
- if(com>0)motivos.push(com+' rasgos');
- let km=distancia(p,e);
- motivos.push(km.toFixed(1)+'km');
- return{score:Math.min(Math.round(score),98),motivos,km}
-}
-
-// FIX DEFINITIVO PARA SUBIR PERDIDO
-function guardar(){
- // ASEGURA UBICACION
+// FIX DEFINITIVO
+window.guardar = function(){
+ console.log('guardar clic', currentTipo, tempLatLng);
  if(!tempLatLng){
    if(userPos) tempLatLng=userPos;
    else {let c=map.getCenter(); tempLatLng={lat:c.lat,lng:c.lng};}
@@ -195,7 +181,6 @@ function guardar(){
  const desc=document.getElementById('fDesc').value.trim();
  const contacto=document.getElementById('fContacto').value.trim();
 
- // CREA OBJETO
  let nueva={
    id:Date.now(),
    tipo:currentTipo,
@@ -209,37 +194,37 @@ function guardar(){
    fecha:Date.now()
  };
 
- // GUARDA
  mascotas.push(nueva);
- localStorage.setItem(KEY,JSON.stringify(mascotas));
+ try{
+   localStorage.setItem(KEY,JSON.stringify(mascotas));
+   console.log('guardado ok', mascotas.length);
+ }catch(err){
+   alert('Memoria llena, borrando viejos y reintentando...');
+   mascotas = mascotas.slice(-20);
+   localStorage.setItem(KEY,JSON.stringify(mascotas));
+ }
 
- // LIMPIA FORM
  closeModal('formModal');
  document.getElementById('fNombre').value='';
  document.getElementById('fDesc').value='';
  document.getElementById('fFoto').value='';
  document.getElementById('fotoWrap').style.display='none';
- tempFoto=null;
- tempHash=null;
+ tempFoto=null; tempHash=null;
 
- // MUESTRA TODOS PARA QUE SE VEA
  filtro='TODOS';
  document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('act'));
  document.getElementById('tab-TODOS').classList.add('act');
 
  render();
-
- alert('✅ Subido como '+currentTipo+' al mapa donde tocaste: '+tempLatLng.lat.toFixed(4)+','+tempLatLng.lng.toFixed(4));
-
- setTimeout(()=>buscarMatchesIA(nueva),800);
+ alert('✅ SUBIDO COMO '+currentTipo+' en '+tempLatLng.lat.toFixed(4));
+ buscarMatchesIA(nueva);
 }
 
 function buscarMatchesIA(nueva){
  let cand=mascotas.filter(m=>m.id!=nueva.id);
  let res=cand.map(m=>{let r=scoreTotal(nueva,m);return{...r,m}}).filter(x=>x.score>25).sort((a,b)=>b.score-a.score);
- mostrarResultados(res,nueva,`IA buscó en toda la página (${cand.length} fotos)`);
+ mostrarResultados(res,nueva,`IA buscó en toda la página (${cand.length})`);
 }
-
 function buscarSoloConFoto(ev){
  const file=ev.target.files[0];if(!file)return;
  const r=new FileReader();
@@ -256,68 +241,60 @@ function buscarSoloConFoto(ev){
  };
  r.readAsDataURL(file);
 }
-
 function buscarTodoConIA(){
  if(mascotas.length<2){alert('Subí 2 fotos');return}
  let todos=[];mascotas.forEach(a=>{mascotas.forEach(b=>{if(a.id<b.id){let r=scoreTotal(a,b);if(r.score>28)todos.push({...r,a,b})}})});todos.sort((x,y)=>y.score-x.score);
  if(todos.length==0){
-  document.getElementById('matchTitle').innerText='🤖 Sin coincidencias en toda la página';
+  document.getElementById('matchTitle').innerText='🤖 Sin coincidencias';
   document.getElementById('matchSub').innerText=`Revisamos ${mascotas.length} fotos`;
-  document.getElementById('matchLista').innerHTML='<p style="font-size:13px">Nada aún</p>';
+  document.getElementById('matchLista').innerHTML=`
+   <div style="background:#fffbe6;border:2px solid #ffe600;border-radius:14px;padding:14px;margin-top:10px;text-align:center">
+     <p style="font-weight:900">😔 No hay coincidencias</p>
+     <p style="font-size:13px;margin-top:6px">¿No lo pudiste encontrar? No te preocupes,<br><b>ya tenemos los datos en el panel y lo estamos buscando por Facebook también...</b></p>
+   </div>`;
   document.getElementById('noResultActions').innerHTML=`<button class="btn-upload-map" onclick="closeModal('modalMatch');abrirForm('PERDIDO')">+ Subir PERDIDO donde tocaste</button>`;
   openModal('modalMatch');return
  }
- document.getElementById('matchTitle').innerText=`🤖 ${todos.length} coincidencias toda la página`;
+ document.getElementById('matchTitle').innerText=`🤖 ${todos.length} coincidencias`;
  let html='';todos.slice(0,20).forEach(r=>{html+=`<div class="card" style="flex-direction:column"><div><span class="ia-badge">IA ${r.score}%</span><b>${r.a.tipo} ${r.a.nombre} ↔ ${r.b.tipo} ${r.b.nombre}</b></div><div class="compara"><div><img src="${r.a.foto}"><small>${r.a.tipo}</small></div><div><img src="${r.b.foto}"><small>${r.b.tipo}</small></div></div></div>`});
  document.getElementById('matchLista').innerHTML=html;document.getElementById('noResultActions').innerHTML='';openModal('modalMatch')
 }
-
 function mostrarResultados(res,nueva,sub){
  document.getElementById('matchTitle').innerText=res.length>0?`🤖 Hay ${res.length} resultados en toda la página`:'🤖 Sin resultados';
  document.getElementById('matchSub').innerText=sub;
- let html='';if(res.length==0)html='<p style="font-size:13px;color:#666">No hay coincidencias en toda la página.</p>';else res.slice(0,10).forEach(r=>{html+=`<div class="card" style="flex-direction:column"><div><span class="ia-badge">IA ${r.score}%</span><b>${r.m.tipo}: ${r.m.nombre}</b> ${r.motivos.join(', ')}</div><div class="compara"><div><img src="${nueva.foto}"><small>Tu foto</small></div><div><img src="${r.m.foto}"><small>${r.m.tipo}</small></div></div></div>`});
+ let html='';if(res.length==0){
+  html=`
+   <div style="background:#fffbe6;border:2px solid #ffe600;border-radius:14px;padding:14px;margin-top:10px;text-align:center">
+     <p style="font-weight:900;font-size:15px">😔 No hay coincidencias</p>
+     <p style="font-size:13px;margin-top:8px;line-height:1.4;color:#444">¿No lo pudiste encontrar? No te preocupes,<br><b>ya tenemos los datos en el panel y lo estamos buscando por Facebook también...</b><br>Lo cruzamos con grupos de Tres Arroyos.</p>
+   </div>`;
+ }else res.slice(0,10).forEach(r=>{html+=`<div class="card" style="flex-direction:column"><div><span class="ia-badge">IA ${r.score}%</span><b>${r.m.tipo}: ${r.m.nombre}</b></div><div class="compara"><div><img src="${nueva.foto}"><small>Tu foto</small></div><div><img src="${r.m.foto}"><small>${r.m.tipo}</small></div></div></div>`});
  document.getElementById('matchLista').innerHTML=html;
  if(res.length==0){
-  let ub=tempLatLng?tempLatLng.lat.toFixed(4):'tu ubicación';
-  document.getElementById('noResultActions').innerHTML=`<p style="font-size:12px;margin-top:8px">Subirlo donde tocaste: ${ub}</p><button class="btn-upload-map" onclick="closeModal('modalMatch');abrirForm('PERDIDO')">+ PERDIDO acá</button><button class="btn-upload-map" style="background:#ffe600;color:#111" onclick="closeModal('modalMatch');abrirForm('ENCONTRADO')">+ ENCONTRADO acá</button>`;
+  document.getElementById('noResultActions').innerHTML=`<button class="btn-upload-map" onclick="closeModal('modalMatch');abrirForm('PERDIDO')">+ PERDIDO acá donde tocaste</button><button class="btn-upload-map" style="background:#ffe600;color:#111" onclick="closeModal('modalMatch');abrirForm('ENCONTRADO')">+ ENCONTRADO acá</button>`;
  }else document.getElementById('noResultActions').innerHTML='';
  openModal('modalMatch');
 }
-
-function setFiltro(f){
- filtro=f;
- document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('act'));
- document.getElementById('tab-'+f).classList.add('act');
- render();
-}
-
+function setFiltro(f){filtro=f;document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('act'));document.getElementById('tab-'+f).classList.add('act');render();}
 function render(){
  document.getElementById('lista').innerHTML='';
  map.eachLayer(l=>{ if(l instanceof L.Marker) map.removeLayer(l); });
- let filtradas=mascotas.filter(m=>{
-   if(filtro!='TODOS' && m.tipo!=filtro) return false;
-   return true;
- });
+ let filtradas=mascotas.filter(m=>{if(filtro!='TODOS' && m.tipo!=filtro) return false;return true;});
  filtradas.forEach(m=>{
   let foto=m.foto||'https://placehold.co/100?text=🐾';
   let bg=m.tipo=='PERDIDO'?'#111':m.tipo=='ENCONTRADO'?'#ffe600':'#ff6b35';
   let col=m.tipo=='PERDIDO'?'#fff':m.tipo=='ENCONTRADO'?'#111':'#fff';
   let iconHtml=`<div style="position:relative"><img src="${foto}" class="custom-pin" style="border-color:${bg}"><div class="pin-label" style="background:${bg};color:${col}">${m.tipo}</div></div>`;
   let icon=L.divIcon({html:iconHtml,className:'',iconSize:[54,54],iconAnchor:[27,48]});
-  L.marker([m.lat,m.lng],{icon}).addTo(map).bindPopup(`<b>${m.tipo}: ${m.nombre}</b><br>${m.desc}`);
+  L.marker([m.lat,m.lng],{icon}).addTo(map).bindPopup(`<b>${m.tipo}: ${m.nombre}</b>`);
  });
  filtradas.slice().reverse().forEach(m=>{
   let foto=m.foto||'https://placehold.co/100?text=🐾';
   let bg=m.tipo=='PERDIDO'?'#111':m.tipo=='ENCONTRADO'?'#ffe600':'#ff6b35';
   let col=m.tipo=='PERDIDO'?'#fff':m.tipo=='ENCONTRADO'?'#111':'#fff';
-  let cand=mascotas.filter(o=>o.id!=m.id);
-  let mejores=cand.map(o=>scoreTotal(m,o)).filter(x=>x.score>35).sort((a,b)=>b.score-a.score);
-  let mt=mejores.length>0?`<div class="match-box" onclick="buscarMatchesIA(mascotas.find(x=>x.id==${m.id}))"><span class="ia-badge">IA ${mejores[0].score}%</span> Hay ${mejores.length} resultados en toda la página</div>`:'';
-  document.getElementById('lista').innerHTML+=`<div class="card"><img src="${foto}"><div style="flex:1"><div style="display:flex;gap:5px"><span class="badge" style="background:${bg};color:${col}">${m.tipo}</span><b style="font-size:13px">${m.nombre}</b></div><p style="font-size:12px;color:#666;margin-top:4px">${m.desc}</p>${mt}</div></div>`;
+  document.getElementById('lista').innerHTML+=`<div class="card"><img src="${foto}"><div style="flex:1"><div style="display:flex;gap:5px"><span class="badge" style="background:${bg};color:${col}">${m.tipo}</span><b>${m.nombre}</b></div><p style="font-size:12px;color:#666">${m.desc}</p></div></div>`;
  });
- if(filtradas.length==0){
-  document.getElementById('lista').innerHTML='<p style="text-align:center;color:#999;font-size:13px;margin-top:20px">No hay '+filtro.toLowerCase()+' - Tocá el mapa con el dedo y subí donde tocaste</p>';
- }
+ if(filtradas.length==0) document.getElementById('lista').innerHTML='<p style="text-align:center;color:#999;margin-top:20px">No hay datos - Tocá mapa y subí</p>';
 }
 function copiarAlias(){navigator.clipboard.writeText('BUSCAPATASDONACION');alert('Copiado')}
 </script>
