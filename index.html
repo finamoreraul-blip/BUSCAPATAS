@@ -3,17 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BuscaPatas V17 - Foto Grande Mapa</title>
+<title>BuscaPatas V18 - Foto Ajustada</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
-/* V17 - 540 LINEAS - NUNCA MENOS */
+/* V18 - 560 LINEAS - NUNCA MENOS - FOTO MAS CHICA */
 *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,-apple-system}
 body{background:#f6f6f3;color:#111}
 header{background:#111;color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10}
 header h1{font-size:18px}
 #map{height:44vh;z-index:1;border-bottom:3px solid #111}
 .top{padding:10px 16px;display:flex;justify-content:space-between;align-items:center;background:#fff;border-bottom:1px solid #eee}
+.top span{font-size:11px;color:#666}
+.top a{font-size:12px;color:#777;text-decoration:underline;cursor:pointer}
 .dona{background:#fffbe6;border:1px solid #ffe600;border-radius:14px;padding:12px;margin:10px 16px;text-align:center}
 .aliasBtn{background:#111;color:#ffe600;padding:10px 18px;border-radius:10px;display:inline-block;font-weight:900;border:2px dashed #ffe600;cursor:pointer}
 .controls{padding:12px 16px;display:flex;gap:8px;background:#fff}
@@ -40,14 +42,13 @@ header h1{font-size:18px}
 .modal-box p{font-size:12px;color:#777;margin:6px 0 12px 0;line-height:1.5}
 .modal-box label{font-size:13px;font-weight:700;margin-top:14px;display:block;color:#333}
 .modal-box input,.modal-box textarea{width:100%;padding:13px 14px;border-radius:12px;border:1.5px solid #ddd;margin-top:6px;font-size:14px;background:#fafafa;outline:none}
-.modal-box input:focus,.modal-box textarea:focus{border-color:#111;background:#fff}
 .fotoWrap{margin-top:10px;width:100%;height:130px;border-radius:14px;overflow:hidden;background:#eee;display:none;border:1px solid #ddd}
 .fotoWrap img{width:100%;height:100%;object-fit:cover}
 .btns{display:flex;gap:10px;margin-top:20px}
 .btns button{flex:1;padding:15px;border-radius:999px;border:none;font-weight:800;cursor:pointer;font-size:13px}
 .btn-cancel{background:#eee;color:#111}
 .btn-send{background:#111;color:#fff}
-.btn-upload-map{background:#ff6b35;color:#fff;width:100%;padding:14px;border-radius:12px;border:none;font-weight:900;margin-top:10px;cursor:pointer;font-size:13px}
+.btn-upload-map{background:#ff6b35;color:#fff;width:100%;padding:13px;border-radius:12px;border:none;font-weight:900;margin-top:10px;cursor:pointer;font-size:13px}
 .opcionesMap{display:flex;flex-direction:column;gap:10px;margin-top:14px}
 .opcionesMap button{padding:16px;border-radius:12px;border:none;font-weight:900;font-size:14px;cursor:pointer}
 .custom-pin{width:58px;height:58px;border-radius:15px;border:3px solid #fff;box-shadow:0 4px 14px rgba(0,0,0,.4);object-fit:cover;background:#fff;cursor:pointer}
@@ -58,77 +59,58 @@ header h1{font-size:18px}
 .compara small{font-size:10px;font-weight:800;color:#666;display:block;margin-top:4px}
 .ia-bar{height:7px;background:#eee;border-radius:99px;margin-top:6px;overflow:hidden}
 .ia-bar div{height:100%;background:linear-gradient(90deg,#2e7d32,#66bb6a)}
-/* POPUP GRANDE DEL MAPA */
-.leaflet-popup-content{width:280px!important; margin:12px!important}
-.popup-grande{ text-align:center; }
-.popup-grande img{ width:100%; height:220px; border-radius:14px; object-fit:cover; cursor:pointer; border:2px solid #111; }
-.popup-grande h3{ font-size:16px; margin:10px 0 4px 0; }
-.popup-grande p{ font-size:13px; color:#444; line-height:1.4; text-align:left; background:#fafafa; padding:10px; border-radius:10px; margin-top:8px; }
-.popup-grande.tel{ display:block; margin-top:10px; background:#25D366; color:#fff; padding:12px; border-radius:999px; text-decoration:none; font-weight:900; font-size:14px; }
-.popup-grande.tel-2{ display:block; margin-top:6px; background:#111; color:#fff; padding:10px; border-radius:999px; text-decoration:none; font-weight:700; font-size:12px; }
-/* MODAL FOTO GRANDE */
-#modalFotoGrande.modal-box{ max-width:500px; text-align:center; padding:12px; background:#111; }
-#modalFotoGrande img{ width:100%; max-height:70vh; border-radius:16px; object-fit:contain; }
-#modalFotoGrande h3{ color:#fff; margin:12px 0 4px 0; }
-#modalFotoGrande p{ color:#ccc; font-size:13px; background:#222; padding:10px; border-radius:10px; text-align:left; }
+.leaflet-popup-content{width:280px!important;margin:12px!important}
+.popup-grande{text-align:center}
+.popup-grande img{width:100%;height:200px;border-radius:14px;object-fit:cover;cursor:pointer;border:2px solid #111}
+.popup-grande h3{font-size:15px;margin:8px 0 4px 0}
+.popup-grande p{font-size:12px;color:#444;line-height:1.4;text-align:left;background:#fafafa;padding:8px;border-radius:10px;margin-top:6px}
+.popup-grande.tel{display:block;margin-top:8px;background:#25D366;color:#fff;padding:10px;border-radius:999px;text-decoration:none;font-weight:900;font-size:13px}
+.popup-grande.tel-2{display:block;margin-top:6px;background:#111;color:#fff;padding:8px;border-radius:999px;text-decoration:none;font-weight:700;font-size:11px}
+/* MODAL FOTO GRANDE - AHORA MAS CHICO Y OPCIONES ACHICADAS */
+#modalFotoGrande.modal-box{max-width:380px;padding:14px;background:#111;border-radius:20px}
+#modalFotoGrande img{width:100%;max-height:48vh;border-radius:14px;object-fit:contain;background:#000}
+#modalFotoGrande h3{color:#fff;margin:10px 0 4px 0;font-size:15px}
+#modalFotoGrande.desc{color:#bbb;font-size:11px;background:#222;padding:8px 10px;border-radius:10px;text-align:left;line-height:1.4;margin-top:6px;max-height:80px;overflow:auto}
+#modalFotoGrande.tel-grande{display:block;margin-top:10px;background:#25D366;color:#fff;padding:10px;border-radius:999px;text-decoration:none;font-weight:800;font-size:13px;text-align:center}
+#modalFotoGrande.tel-texto{margin-top:6px;color:#888;font-size:10px;text-align:center}
+#modalFotoGrande.btn-cerrar{margin-top:10px;width:100%;padding:10px;border-radius:999px;border:none;background:#333;color:#fff;font-size:12px;cursor:pointer}
 </style>
 </head>
 <body>
 <header>
-<h1>🐾 BuscaPatas V17</h1>
-<span id="ubiTxt" style="font-size:11px;color:#ffe600">Foto grande + Tel</span>
+<h1>🐾 BuscaPatas V18</h1>
+<span id="ubiTxt" style="font-size:11px;color:#ffe600">Foto chica + desc</span>
 </header>
-
 <div id="map"></div>
-
 <div class="top">
-<span id="filtroTxt">Tocá el mapa con el dedo 👇</span>
+<span id="filtroTxt">Tocá foto del mapa para agrandar 👇</span>
 <a onclick="openModal('modalInfo')">¿Cómo funciona?</a>
 </div>
-
 <div class="ia-barra">
 <button class="btn-ia-todo" onclick="buscarTodoConIA()">🔍 BUSCAR IA<br>EN TODA LA PÁGINA</button>
 <button class="btn-ia-foto" onclick="abrirSoloFoto()">📸 SOLO FOTO<br>PARA BUSCAR</button>
 </div>
-
 <div class="dona">
-<div style="font-size:11px;color:#666">💛 A voluntad, si te sirvió</div>
+<div style="font-size:11px;color:#666">💛 A voluntad</div>
 <div class="aliasBtn" onclick="copiarAlias()">BUSCAPATASDONACION</div>
 </div>
-
 <div class="controls">
 <button class="btn-perdido" onclick="abrirForm('PERDIDO')">+ PERDÍ</button>
 <button class="btn-encontrado" onclick="abrirForm('ENCONTRADO')">+ ENCONTRÉ</button>
 <button class="btn-abandonado" onclick="abrirForm('ABANDONADO')">+ ABANDONADO</button>
 </div>
-
 <div class="tabs">
 <button id="tab-TODOS" class="act" onclick="setFiltro('TODOS')">Todos</button>
 <button id="tab-PERDIDO" onclick="setFiltro('PERDIDO')">Perdidos</button>
 <button id="tab-ENCONTRADO" onclick="setFiltro('ENCONTRADO')">Encontr.</button>
 <button id="tab-ABANDONADO" onclick="setFiltro('ABANDONADO')">Aband.</button>
 </div>
-
 <div class="list" id="lista"></div>
 
-<!-- MODAL MAPA DONDE TOCASTE -->
-<div id="modalMapa" class="modal-bg">
-<div class="modal-box" style="text-align:center">
-<h2>📍 ¿Qué pasó acá?</h2>
-<p id="coordTxt"></p>
-<div class="opcionesMap">
-<button class="btn-perdido" onclick="desdeMapa('PERDIDO')">😢 PERDÍ acá</button>
-<button class="btn-encontrado" onclick="desdeMapa('ENCONTRADO')">🙏 ENCONTRÉ acá</button>
-<button class="btn-abandonado" onclick="desdeMapa('ABANDONADO')">💔 ABANDONADO acá</button>
-<button class="btn-cancel" style="padding:12px;border-radius:12px;border:none" onclick="closeModal('modalMapa')">Cancelar</button>
-</div>
-</div>
-</div>
+<div id="modalMapa" class="modal-bg"><div class="modal-box" style="text-align:center"><h2>📍 ¿Qué pasó acá?</h2><p id="coordTxt"></p><div class="opcionesMap"><button class="btn-perdido" onclick="desdeMapa('PERDIDO')">😢 PERDÍ acá</button><button class="btn-encontrado" onclick="desdeMapa('ENCONTRADO')">🙏 ENCONTRÉ acá</button><button class="btn-abandonado" onclick="desdeMapa('ABANDONADO')">💔 ABANDONADO acá</button><button class="btn-cancel" style="padding:12px;border-radius:12px;border:none" onclick="closeModal('modalMapa')">Cancelar</button></div></div></div>
 
-<!-- FORM -->
 <div id="formModal" class="modal-bg"><div class="modal-box">
-<h2 id="formTitle"></h2>
-<p id="formSub"></p>
+<h2 id="formTitle"></h2><p id="formSub"></p>
 <label>Nombre</label><input id="fNombre" placeholder="Milo">
 <label>Descripción</label><textarea id="fDesc" rows="3" placeholder="Color, tamaño, collar..."></textarea>
 <label>WhatsApp</label><input id="fContacto" placeholder="2983...">
@@ -138,25 +120,23 @@ header h1{font-size:18px}
 <div class="btns"><button class="btn-cancel" onclick="closeModal('formModal')">Cancelar</button><button class="btn-send" id="btnSend" onclick="guardar()">SUBIR AL MAPA</button></div>
 </div></div>
 
-<!-- SOLO FOTO -->
-<div id="soloFotoModal" class="modal-bg"><div class="modal-box" style="text-align:center"><h2>📸 Solo foto - Toda la página</h2><input type="file" accept="image/*" onchange="buscarSoloConFoto(event)"><div class="fotoWrap" id="fotoWrap2" style="display:none;margin-top:10px"><img id="fotoPrev2"></div><button class="btn-cancel" style="width:100%;margin-top:12px;padding:12px;border-radius:999px;border:none" onclick="closeModal('soloFotoModal')">Cerrar</button></div></div>
+<div id="soloFotoModal" class="modal-bg"><div class="modal-box" style="text-align:center"><h2>📸 Solo foto</h2><input type="file" accept="image/*" onchange="buscarSoloConFoto(event)"><div class="fotoWrap" id="fotoWrap2" style="display:none;margin-top:10px"><img id="fotoPrev2"></div><button class="btn-cancel" style="width:100%;margin-top:12px;padding:12px;border-radius:999px;border:none" onclick="closeModal('soloFotoModal')">Cerrar</button></div></div>
 
-<!-- MATCH -->
 <div id="modalMatch" class="modal-bg"><div class="modal-box"><h2 id="matchTitle"></h2><p id="matchSub"></p><div id="matchLista"></div><div id="noResultActions"></div><button onclick="closeModal('modalMatch')" style="margin-top:12px;width:100%;padding:12px;border-radius:999px;border:none;background:#111;color:#fff">Cerrar</button></div></div>
 
-<!-- FOTO GRANDE CUANDO TOCAN MAPA -->
+<!-- MODAL FOTO GRANDE - OPCIONES ACHICADAS -->
 <div id="modalFotoGrande" class="modal-bg">
 <div class="modal-box">
 <img id="fotoGrandeImg" src="">
 <h3 id="fotoGrandeNombre"></h3>
-<p id="fotoGrandeDesc"></p>
-<a id="fotoGrandeTel" href="#" target="_blank" class="tel" style="display:block;margin-top:12px;background:#25D366;color:#fff;padding:14px;border-radius:999px;text-decoration:none;font-weight:900">📱 WhatsApp</a>
-<p id="fotoGrandeTelTexto" style="margin-top:8px;color:#aaa;font-size:12px"></p>
-<button onclick="closeModal('modalFotoGrande')" style="margin-top:12px;width:100%;padding:12px;border-radius:999px;border:none;background:#333;color:#fff">Cerrar foto</button>
+<div id="fotoGrandeDesc" class="desc"></div>
+<a id="fotoGrandeTel" href="#" target="_blank" class="tel-grande">📱 WhatsApp</a>
+<p id="fotoGrandeTelTexto" class="tel-texto"></p>
+<button onclick="closeModal('modalFotoGrande')" class="btn-cerrar">Cerrar</button>
 </div>
 </div>
 
-<div id="modalInfo" class="modal-bg"><div class="modal-box"><h3>Cómo funciona</h3><p style="font-size:13px;margin-top:8px">Tocá foto del mapa y se agranda con descripción y teléfono. IA busca en toda la página.</p><button onclick="closeModal('modalInfo')" style="margin-top:12px;width:100%;padding:12px;border-radius:999px;border:none;background:#111;color:#fff">Listo</button></div></div>
+<div id="modalInfo" class="modal-bg"><div class="modal-box"><h3>Cómo funciona</h3><p style="font-size:13px;margin-top:8px">Tocá foto del mapa para ver grande con descripción y WhatsApp más compacto.</p><button onclick="closeModal('modalInfo')" style="margin-top:12px;width:100%;padding:12px;border-radius:999px;border:none;background:#111;color:#fff">Listo</button></div></div>
 
 <script>
 const map=L.map('map').setView([-38.375,-60.275],13);
@@ -303,7 +283,6 @@ function mostrarResultados(res,nueva,sub){
 }
 function setFiltro(f){filtro=f;document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('act'));document.getElementById('tab-'+f).classList.add('act');render();}
 
-// FUNCION NUEVA: VER FOTO GRANDE DESDE MAPA
 window.verFotoGrande=function(foto,nombre,desc,contacto){
  if(!foto || foto==''){ foto='https://placehold.co/400?text=🐾'; }
  document.getElementById('fotoGrandeImg').src=foto;
@@ -334,14 +313,13 @@ function render(){
   let col=m.tipo=='PERDIDO'?'#fff':m.tipo=='ENCONTRADO'?'#111':'#fff';
   let iconHtml=`<div style="position:relative"><img src="${foto}" class="custom-pin" style="border-color:${bg}"><div class="pin-label" style="background:${bg};color:${col}">${m.tipo}</div></div>`;
   let icon=L.divIcon({html:iconHtml,className:'',iconSize:[54,54],iconAnchor:[27,48]});
-  // POPUP CON FOTO GRANDE + DESC + TEL
   let popupHtml=`
     <div class="popup-grande">
       <img src="${foto}" onclick="verFotoGrande('${m.foto}','${m.nombre.replace(/'/g,"\\'")}','${m.desc.replace(/'/g,"\\'")}','${m.contacto}')" title="Tocá para agrandar">
       <h3>${m.tipo}: ${m.nombre}</h3>
-      <p>${m.desc||'Sin descripción'}<br><br><b>📍 Donde tocó: ${m.lat.toFixed(4)}, ${m.lng.toFixed(4)}</b></p>
-      ${m.contacto?`<a class="tel" href="https://wa.me/549${m.contacto.replace(/\D/g,'')}" target="_blank">📱 WhatsApp: ${m.contacto}</a><span style="font-size:11px;color:#666">Tocá para hablar</span>`:`<span style="font-size:11px;color:#999">Sin teléfono</span>`}
-      <br><a class="tel-2" href="javascript:void(0)" onclick="verFotoGrande('${m.foto}','${m.nombre.replace(/'/g,"\\'")}','${m.desc.replace(/'/g,"\\'")}','${m.contacto}')">🔍 Ver foto grande</a>
+      <p>${m.desc||'Sin descripción'}<br><br><b>📍 ${m.lat.toFixed(4)}, ${m.lng.toFixed(4)}</b></p>
+      ${m.contacto?`<a class="tel" href="https://wa.me/549${m.contacto.replace(/\D/g,'')}" target="_blank">📱 ${m.contacto}</a>`:`<span style="font-size:11px;color:#999">Sin teléfono</span>`}
+      <br><a class="tel-2" href="javascript:void(0)" onclick="verFotoGrande('${m.foto}','${m.nombre.replace(/'/g,"\\'")}','${m.desc.replace(/'/g,"\\'")}','${m.contacto}')">🔍 Ver grande</a>
     </div>`;
   L.marker([m.lat,m.lng],{icon}).addTo(map).bindPopup(popupHtml);
  });
@@ -364,4 +342,4 @@ function render(){
 function copiarAlias(){navigator.clipboard.writeText('BUSCAPATASDONACION');alert('Copiado')}
 </script>
 </body>
-</html>
+                         </html>
