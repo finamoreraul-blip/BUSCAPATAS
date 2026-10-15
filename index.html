@@ -105,7 +105,6 @@ async function cargarDeSheet(){
   const r=await fetch(API_URL);
   const d=await r.json();
   let delSheet=d.map(row=>({id:row.id,tipo:row.tipo,nombre:row.nombre,desc:row.desc,contacto:row.contacto,lat:parseFloat(row.lat),lng:parseFloat(row.lng),foto:row.foto,iaHash:row.iaHash||{hash:[]},fecha:row.fecha,ciudad:row.ciudad||'Tres Arroyos',encontrado:row.encontrado||false})).filter(p=>p.lat);
-
   let local=[];try{local=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){local=[]}
   let faltan=local.filter(l=>!delSheet.find(s=>String(s.id)==String(l.id)));
   if(faltan.length>0){
@@ -199,7 +198,6 @@ function compararIA(h1,h2){
 function distancia(a,b){const R=6371;const dLat=(b.lat-a.lat)*Math.PI/180;const dLng=(b.lng-a.lng)*Math.PI/180;const h=Math.sin(dLat/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLng/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
 function scoreTotal(p,e){let sFoto=compararIA(p.iaHash,e.iaHash);if(sFoto<55)return{score:sFoto};let score=sFoto;let km=distancia(p,e);if(km<5)score+=10;return{score:Math.min(Math.round(score),99),km}}
 
-// ESTE ES EL FIX QUE TE FALTABA - GUARDAR LOCAL PRIMERO
 async function guardar(){
  let nombre=document.getElementById('fNombre').value.trim();
  let desc=document.getElementById('fDesc').value.trim();
@@ -224,7 +222,6 @@ async function guardar(){
  tempFoto=null;tempHash=null;
 
  alert('✅ SUBIDO COMO '+currentTipo+' - Ya aparece abajo en TODOS');
-
  try{await fetch(API_URL+'?action=add',{method:'POST',mode:'no-cors',body:JSON.stringify(nueva)});}catch(e){}
 }
 
@@ -232,35 +229,32 @@ function render(){
  markers.forEach(m=>map.removeLayer(m));
  markers=[];
  document.getElementById('lista').innerHTML='';
-
  let filtradas=mascotas.filter(m=>{
    if(filtro!='TODOS'&&m.tipo!=filtro) return false;
    return true;
  });
-
  document.getElementById('contadorTxt').innerText=filtradas.length+' en '+filtro;
-
  filtradas.forEach(m=>{
   let foto=m.foto||'https://placehold.co/100?text=🐾';
   let bg=m.tipo=='PERDIDO'?'#111':m.tipo=='ENCONTRADO'?'#ffe600':'#ff6b35';
   let col=m.tipo=='PERDIDO'?'#fff':m.tipo=='ENCONTRADO'?'#111':'#fff';
   let iconHtml=`<div style="position:relative"><img src="${foto}" class="custom-pin" style="border-color:${bg}"><div class="pin-label" style="background:${bg};color:${col}">${m.tipo}</div></div>`;
   let icon=L.divIcon({html:iconHtml,className:'',iconSize:[54,54],iconAnchor:[27,48]});
+  let telLimpio=String(m.contacto||'').replace(/\D/g,'');
   let mk=L.marker([m.lat,m.lng],{icon}).addTo(map);
-  mk.bindPopup(`<b>${m.nombre}</b><br>${m.tipo}`);
+  mk.bindPopup(`<b>${m.nombre}</b><br>${m.tipo}<br><a href="https://wa.me/549${telLimpio}" target="_blank">📱 ${m.contacto}</a>`);
   markers.push(mk);
  });
-
  filtradas.slice().reverse().forEach(m=>{
   let foto=m.foto||'https://placehold.co/100?text=🐾';
+  let telLimpio=String(m.contacto||'').replace(/\D/g,'');
   let div=document.createElement('div');
   div.className='card';
-  div.innerHTML=`<img src="${foto}" onclick="verFotoGrande('${(m.foto||'').slice(0,50)}','${m.nombre.replace(/'/g,"")}','${(m.desc||'').replace(/'/g,"")}','${m.contacto}')"><div style="flex:1"><span class="badge" style="background:#111;color:#fff">${m.tipo}</span> <b>${m.nombre}</b><br><small>${m.desc||''}</small><br><small>📱 ${m.contacto}</small></div>`;
+  div.innerHTML=`<img src="${foto}"><div style="flex:1"><span class="badge" style="background:#111;color:#fff">${m.tipo}</span> <b>${m.nombre}</b><br><small>${m.desc||''}</small><br><small>📱 ${m.contacto}</small><br><a href="https://wa.me/549${telLimpio}" target="_blank" style="font-size:11px;font-weight:800">WhatsApp</a></div>`;
   document.getElementById('lista').appendChild(div);
  });
-
  if(filtradas.length==0){
-   document.getElementById('lista').innerHTML='<p style="text-align:center;color:#999;margin-top:20px">No hay datos en '+filtro+' - Tocá + PERDÍ para probar</p>';
+   document.getElementById('lista').innerHTML='<p style="text-align:center;color:#999;margin-top:20px">No hay datos en '+filtro+'</p>';
  }
 }
 
@@ -272,10 +266,12 @@ function setFiltro(f){
 }
 
 window.verFotoGrande=function(foto,nombre,desc,contacto){
-  document.getElementById('fotoGrandeImg').src=mascotas.find(x=>x.nombre==nombre)?.foto || foto;
+  let realFoto=mascotas.find(x=>x.nombre==nombre)?.foto || foto;
+  document.getElementById('fotoGrandeImg').src=realFoto;
   document.getElementById('fotoGrandeNombre').innerText=nombre;
   document.getElementById('fotoGrandeDesc').innerText=desc;
-  document.getElementById('fotoGrandeTel').href='https://wa.me/549'+(contacto||'').replace(/\D/g,'');
+  let telLimpio=String(contacto||'').replace(/\D/g,'');
+  document.getElementById('fotoGrandeTel').href='https://wa.me/549'+telLimpio;
   document.getElementById('fotoGrandeTel').innerText='📱 '+contacto;
   openModal('modalFotoGrande');
 }
