@@ -276,23 +276,27 @@ function calcularHashIA(dataUrl,cb){
   let edges=0;
   for(let i=0;i<d.length;i+=4){
    let r=d[i],g=d[i+1],b=d[i+2];
-   hash.push(Math.round((r+g+b)/3));
-   histR[Math.floor(r/64)]++; histG[Math.floor(g/64)]++; histB[Math.floor(b/64)]++;
-   if(i>128){ edges+=Math.abs(d[i]-d[i-4]); }
+   hash.push((r+g+b)/3);
+   histR[r>>6]++; histG[g>>6]++; histB[b>>6]++;
+   if(i>16){ edges+=Math.abs(d[i]-d[i-8]); }
   }
-  cb({hash,color:histR.concat(histG).concat(histB),edges:edges/1024});
+  cb({hash,color:histR.concat(histG).concat(histB),edges:edges});
  };
  img.src=dataUrl;
 }
 function compararIA(h1,h2){
  if(!h1||!h2||!h1.hash||h1.hash.length<100) return 0;
- let diff=0; for(let i=0;i<1024;i++) diff+=Math.abs(h1.hash[i]-h2.hash[i]);
- let scoreFoto=Math.max(0,100-diff/90);
- let diffColor=0; for(let i=0;i<12;i++) diffColor+=Math.abs((h1.color[i]||0)-(h2.color[i]||0));
- let scoreColor=Math.max(0,100-diffColor/2.5);
+ let diff=0;
+ for(let i=0;i<1024;i++) diff+=Math.abs(h1.hash[i]-h2.hash[i]);
+ let avgDiff=diff/1024;
+ let scoreFoto=Math.max(0,100-avgDiff*2.2);
+ if(diff===0) scoreFoto=99;
+ let diffColor=0;
+ for(let i=0;i<12;i++) diffColor+=Math.abs((h1.color[i]||0)-(h2.color[i]||0));
+ let scoreColor=Math.max(0,100-diffColor*0.35);
  let diffEdge=Math.abs((h1.edges||0)-(h2.edges||0));
- let scoreEdge=Math.max(0,100-diffEdge*1.8);
- return Math.round(scoreFoto*0.55 + scoreColor*0.30 + scoreEdge*0.15);
+ let scoreEdge=Math.max(0,100-diffEdge*0.002);
+ return Math.round(scoreFoto*0.65 + scoreColor*0.25 + scoreEdge*0.10);
 }
 function distancia(a,b){const R=6371;const dLat=(b.lat-a.lat)*Math.PI/180;const dLng=(b.lng-a.lng)*Math.PI/180;const h=Math.sin(dLat/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLng/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
 function scoreTotal(p,e){
