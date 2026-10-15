@@ -266,38 +266,39 @@ function previewFoto(ev){
  reader.readAsDataURL(file);
 }
 
+// === FIX IA 99% ===
 function calcularHashIA(dataUrl,cb){
  const img=new Image();
  img.onload=()=>{
-  const c=document.createElement('canvas');c.width=32;c.height=32;
-  const ctx=c.getContext('2d');ctx.drawImage(img,0,0,32,32);
-  const d=ctx.getImageData(0,0,32,32).data;
-  let hash=[];let histR=[0,0,0,0],histG=[0,0,0,0],histB=[0,0,0,0];
-  let edges=0;
+  const c=document.createElement('canvas');c.width=16;c.height=16;
+  const ctx=c.getContext('2d');ctx.drawImage(img,0,0,16,16);
+  const d=ctx.getImageData(0,0,16,16).data;
+  let grays=[];let sum=0;let hist=[0,0,0,0];
   for(let i=0;i<d.length;i+=4){
-   let r=d[i],g=d[i+1],b=d[i+2];
-   hash.push((r+g+b)/3);
-   histR[r>>6]++; histG[g>>6]++; histB[b>>6]++;
-   if(i>16){ edges+=Math.abs(d[i]-d[i-8]); }
+   let g=(d[i]+d[i+1]+d[i+2])/3;
+   grays.push(g);sum+=g;hist[Math.floor(d[i]/64)]++;
   }
-  cb({hash,color:histR.concat(histG).concat(histB),edges:edges});
+  let avg=sum/grays.length;
+  let bits=grays.map(v=>v>avg?1:0);
+  cb({hash:bits,gray:grays,color:hist,avg:avg});
  };
  img.src=dataUrl;
 }
 function compararIA(h1,h2){
- if(!h1||!h2||!h1.hash||h1.hash.length<100) return 0;
+ if(!h1||!h2||!h1.hash||h1.hash.length<10) return 0;
+ let len=Math.min(h1.hash.length,h2.hash.length);
  let diff=0;
- for(let i=0;i<1024;i++) diff+=Math.abs(h1.hash[i]-h2.hash[i]);
- let avgDiff=diff/1024;
- let scoreFoto=Math.max(0,100-avgDiff*2.2);
- if(diff===0) scoreFoto=99;
+ for(let i=0;i<len;i++){if(Math.abs(h1.hash[i]-h2.hash[i])>0.5)diff++;}
+ let scoreFoto=100-(diff/len*100);
+ if(diff===0)scoreFoto=99;
+ if(diff<=3)scoreFoto=96;
  let diffColor=0;
- for(let i=0;i<12;i++) diffColor+=Math.abs((h1.color[i]||0)-(h2.color[i]||0));
- let scoreColor=Math.max(0,100-diffColor*0.35);
- let diffEdge=Math.abs((h1.edges||0)-(h2.edges||0));
- let scoreEdge=Math.max(0,100-diffEdge*0.002);
- return Math.round(scoreFoto*0.65 + scoreColor*0.25 + scoreEdge*0.10);
+ if(h1.color&&h2.color){for(let i=0;i<4;i++)diffColor+=Math.abs((h1.color[i]||0)-(h2.color[i]||0));}
+ let scoreColor=Math.max(0,100-diffColor*1.2);
+ return Math.round(scoreFoto*0.85+scoreColor*0.15);
 }
+// === FIN FIX ===
+
 function distancia(a,b){const R=6371;const dLat=(b.lat-a.lat)*Math.PI/180;const dLng=(b.lng-a.lng)*Math.PI/180;const h=Math.sin(dLat/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLng/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
 function scoreTotal(p,e){
  let score=0;
@@ -591,4 +592,4 @@ function copiarAlias(){navigator.clipboard.writeText('BUSCAPATASDONACION');alert
 // FIN 730
 </script>
 </body>
- </html>
+</html>
