@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel Completo Santi - BuscaPatas</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui}
+body{background:#0f0f0f;color:#fff;padding:12px}
+header{padding:12px 0;border-bottom:2px solid #ffe600;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.stats{display:flex;gap:6px;margin:12px 0;flex-wrap:wrap}
+.stat{background:#1e1e1e;border:1px solid #333;border-radius:12px;padding:10px 14px;text-align:center;flex:1;min-width:80px}
+.stat b{font-size:18px;display:block;color:#ffe600}
+.filters{display:flex;gap:6px;margin:10px 0;flex-wrap:wrap}
+.filters button{padding:8px 12px;border-radius:999px;border:2px solid #333;background:#222;color:#fff;font-size:11px;font-weight:800;cursor:pointer}
+.filters button.act{background:#ffe600;color:#111;border-color:#ffe600}
+input,textarea{padding:12px;border-radius:10px;border:1px solid #333;background:#222;color:#fff;width:100%;margin-top:6px}
+.card{background:#1e1e1e;border-radius:16px;padding:12px;margin-top:10px;display:flex;gap:12px;border:1px solid #333;position:relative}
+.card img{width:80px;height:80px;border-radius:12px;object-fit:cover;cursor:pointer}
+.btn{padding:8px 10px;border-radius:8px;border:none;font-weight:800;cursor:pointer;font-size:11px}
+.btn-del{background:#ff4444;color:#fff}
+.btn-ok{background:#43A047;color:#fff}
+.btn-edit{background:#444;color:#fff}
+.btn-wsp{background:#25D366;color:#fff;text-decoration:none;padding:8px 12px;border-radius:999px;font-size:11px;display:inline-block}
+.badge{font-size:9px;padding:4px 7px;border-radius:99px;font-weight:900}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:999;align-items:center;justify-content:center;padding:16px}
+.modal-box{background:#1e1e1e;border-radius:16px;padding:16px;width:100%;max-width:400px;border:1px solid #333}
+</style>
+</head>
+<body>
+<header><h2>🐾 Panel Completo Santi</h2><div><button class="btn" style="background:#ffe600;color:#111" onclick="exportar()">📥 Excel</button> <span id="count" style="background:#111;color:#ffe600;padding:6px 10px;border-radius:99px;font-size:11px;margin-left:6px">...</span></div></header>
+<div class="stats"><div class="stat"><b id="s-perdidos">0</b>Perdidos</div><div class="stat"><b id="s-encontrados">0</b>Encontr.</div><div class="stat"><b id="s-aband">0</b>Aband.</div><div class="stat"><b id="s-reen">0</b>Reenc.</div></div>
+<input id="busc" placeholder="🔍 Buscar nombre, barrio, teléfono..." oninput="render()">
+<div class="filters"><button id="f-TODOS" class="act" onclick="setF('TODOS')">Todos</button><button id="f-PERDIDO" onclick="setF('PERDIDO')">Perdidos</button><button id="f-ENCONTRADO" onclick="setF('ENCONTRADO')">Encontrados</button><button id="f-ABANDONADO" onclick="setF('ABANDONADO')">Abandonados</button><button id="f-REEN" onclick="setF('REEN')">Reencuentros</button></div>
+<div id="lista"></div>
+<div id="modalEdit" class="modal-bg"><div class="modal-box"><h3>Editar</h3><input id="e-nombre" placeholder="Nombre"><textarea id="e-desc" placeholder="Descripción" rows="3"></textarea><input id="e-contacto" placeholder="Contacto"><div style="display:flex;gap:8px;margin-top:12px"><button class="btn" style="background:#444;flex:1" onclick="cerrar()">Cancelar</button><button class="btn" style="background:#ffe600;color:#111;flex:1" onclick="guardarEdit()">Guardar</button></div></div></div>
+<script>
+const API_URL='https://script.google.com/macros/s/AKfycbwkSukpwgNRgEvkDwbCB-k3KBsRevo7KMZDxaV9KeXrTyvHBq1tad5Sou5iKRB4AHGNRg/exec';
+let mascotas=[], filtro='TODOS', editId=null;
+async function cargar(){let r=await fetch(API_URL);mascotas=await r.json();render()}
+function setF(f){filtro=f;document.querySelectorAll('.filters button').forEach(b=>b.classList.remove('act'));document.getElementById('f-'+f).classList.add('act');render()}
+function render(){
+ let q=(document.getElementById('busc').value||'').toLowerCase();
+ let list=mascotas.filter(m=>{
+  if(filtro==='PERDIDO'&& (m.tipo!=='PERDIDO'||m.encontrado))return false;
+  if(filtro==='ENCONTRADO'&& (m.tipo!=='ENCONTRADO'||m.encontrado))return false;
+  if(filtro==='ABANDONADO'&& (m.tipo!=='ABANDONADO'||m.encontrado))return false;
+  if(filtro==='REEN'&&!m.encontrado)return false;
+  return (m.nombre+m.desc+m.contacto+m.tipo).toLowerCase().includes(q);
+ });
+ document.getElementById('s-perdidos').innerText=mascotas.filter(m=>m.tipo==='PERDIDO'&&!m.encontrado).length;
+ document.getElementById('s-encontrados').innerText=mascotas.filter(m=>m.tipo==='ENCONTRADO'&&!m.encontrado).length;
+ document.getElementById('s-aband').innerText=mascotas.filter(m=>m.tipo==='ABANDONADO'&&!m.encontrado).length;
+ document.getElementById('s-reen').innerText=mascotas.filter(m=>m.encontrado).length;
+ document.getElementById('count').innerText=list.length;
+ document.getElementById('lista').innerHTML=list.reverse().map(m=>{
+  let bg=m.encontrado?'#43A047':m.tipo=='PERDIDO'?'#111':m.tipo=='ENCONTRADO'?'#ffe600':'#ff6b35';
+  let col=m.tipo=='ENCONTRADO'?'#111':'#fff';
+  return `<div class="card"><img src="${m.foto||'https://placehold.co/100?text=🐾'}" onclick="window.open('${m.foto}','_blank')">
+  <div style="flex:1"><div><span class="badge" style="background:${bg};color:${col}">${m.encontrado?'REENCUENTRO':m.tipo}</span> <b>${m.nombre}</b> <small style="color:#888">${m.ciudad||''} • ${new Date(m.fecha).toLocaleDateString()}</small></div>
+  <small style="color:#aaa;display:block;margin:6px 0">${m.desc||''}</small>
+  <a class="btn-wsp" href="https://wa.me/549${(m.contacto||'').replace(/\D/g,'')}" target="_blank">📱 ${m.contacto}</a> <button class="btn btn-edit" onclick="copiarTel('${m.contacto}')">📋 Copiar</button>
+  <div style="display:flex;gap:6px;margin-top:8px"><button class="btn btn-edit" onclick="editar(${m.id})">✏️ Editar</button><button class="btn btn-ok" onclick="marcar(${m.id})">✅ Reenc.</button><button class="btn btn-del" onclick="borrar(${m.id})">🗑️ Borrar</button></div></div></div>`}).join('');
+}
+function copiarTel(t){navigator.clipboard.writeText(t);alert('Copiado '+t)}
+function editar(id){let m=mascotas.find(x=>String(x.id)===String(id));editId=id;document.getElementById('e-nombre').value=m.nombre;document.getElementById('e-desc').value=m.desc;document.getElementById('e-contacto').value=m.contacto;document.getElementById('modalEdit').style.display='flex'}
+function cerrar(){document.getElementById('modalEdit').style.display='none'}
+async function guardarEdit(){let m=mascotas.find(x=>String(x.id)===String(editId));m.nombre=document.getElementById('e-nombre').value;m.desc=document.getElementById('e-desc').value;m.contacto=document.getElementById('e-contacto').value;await fetch(API_URL+'?action=update',{method:'POST',body:JSON.stringify({id:editId,nombre:m.nombre,desc:m.desc,contacto:m.contacto})});cerrar();render()}
+async function borrar(id){if(!confirm('¿Borrar?'))return;await fetch(API_URL+'?action=delete',{method:'POST',body:JSON.stringify({id})});mascotas=mascotas.filter(m=>String(m.id)!==String(id));render()}
+async function marcar(id){if(!confirm('¿Marcar como reencuentro?'))return;await fetch(API_URL+'?action=encontrado',{method:'POST',body:JSON.stringify({id})});let m=mascotas.find(x=>String(x.id)===String(id));if(m){m.encontrado=true}render()}
+function exportar(){let csv='id,tipo,nombre,desc,contacto,lat,lng,ciudad,fecha,encontrado\n'+mascotas.map(m=>`${m.id},${m.tipo},"${m.nombre}","${m.desc.replace(/"/g,'')}",${m.contacto},${m.lat},${m.lng},${m.ciudad},${new Date(m.fecha).toLocaleDateString()},${m.encontrado}`).join('\n');let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='buscapatas_santi.csv';a.click()}
+cargar();
+</script>
+</body>
+  </html>
