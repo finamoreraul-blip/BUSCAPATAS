@@ -105,16 +105,8 @@ async function cargarDeSheet(){
   const r=await fetch(API_URL);
   const d=await r.json();
   let delSheet=d.map(row=>({id:row.id,tipo:row.tipo,nombre:row.nombre,desc:row.desc,contacto:row.contacto,lat:parseFloat(row.lat),lng:parseFloat(row.lng),foto:row.foto,iaHash:row.iaHash||{hash:[]},fecha:row.fecha,ciudad:row.ciudad||'Tres Arroyos',encontrado:row.encontrado||false})).filter(p=>p.lat);
-  let local=[];try{local=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){local=[]}
-  let faltan=local.filter(l=>!delSheet.find(s=>String(s.id)==String(l.id)));
-  if(faltan.length>0){
-    document.getElementById('ubiTxt').innerText='⏳ Migrando '+faltan.length+'...';
-    for(let m of faltan){try{await fetch(API_URL+'?action=add',{method:'POST',mode:'no-cors',body:JSON.stringify(m)})}catch(e){}}
-    delSheet=[...delSheet,...faltan];
-  }
-  let unidos=[...delSheet];
-  mascotas.forEach(l=>{if(!unidos.find(s=>String(s.id)==String(l.id))) unidos.push(l);});
-  mascotas=unidos;
+  // FIX: NO RESUBIR BORRADOS - solo usar lo del Sheet
+  mascotas=delSheet;
   localStorage.setItem(KEY,JSON.stringify(mascotas));
   render();
   document.getElementById('ubiTxt').innerText='✅ '+delSheet.length+' del Sheet';
@@ -315,4 +307,4 @@ window.buscarSoloConFoto=buscarSoloConFoto;
 window.closeModal=closeModal;
 </script>
 </body>
-</html>
+                                                                                                                                                                                                                                                                                                                                                                                                                               </html>
