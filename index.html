@@ -97,7 +97,7 @@ header{background:#111;color:#fff;padding:14px 20px;display:flex;justify-content
 <body>
 <header><h1 id="tituloCiudad">🐾 BuscaPatas</h1><span id="ubiTxt">Form arreglado</span></header>
 <div id="map"></div>
-<div class="top"><span id="filtroTxt">Tocá foto → ver datos, solo mapa</span><span id="contadorTxt" style="background:#111;color:#ffe600;padding:6px 10px;border-radius:99px;font-size:11px;font-weight:900">0 perdidos • 0 reencuentros</span><a onclick="openModal('modalInfo')">Info</a></div>
+<div class="top"><span id="filtroTxt">Tocá foto → ver datos, solo mapa</span><span id="contadorTxt" style="background:#111;color:#ffe600;padding:6px 10px;border-radius:99px;font-size:11px;font-weight:900">0 perdidos • 0 reencuentros</span></div>
 <div class="ia-barra"><button class="btn-ia-todo" onclick="buscarTodoConIA()">🔍 BUSCAR IA<br>EN TODA LA PÁGINA</button><button class="btn-ia-foto" onclick="abrirSoloFoto()">📸 SOLO FOTO<br>LEE TODOS</button></div>
 <div class="dona"><div class="aliasBtn" onclick="copiarAlias()">BUSCAPATASDONACION</div></div>
 <div class="controls"><button class="btn-perdido" onclick="abrirForm('PERDIDO')">+ PERDÍ</button><button class="btn-encontrado" onclick="abrirForm('ENCONTRADO')">+ ENCONTRÉ</button><button class="btn-abandonado" onclick="abrirForm('ABANDONADO')">+ ABANDONADO</button></div>
@@ -269,23 +269,30 @@ function previewFoto(ev){
 function calcularHashIA(dataUrl,cb){
  const img=new Image();
  img.onload=()=>{
-  const c=document.createElement('canvas');c.width=16;c.height=16;
-  const ctx=c.getContext('2d');ctx.drawImage(img,0,0,16,16);
-  const d=ctx.getImageData(0,0,16,16).data;
-  let hash=[];let r=0,g=0,b=0;
-  for(let i=0;i<d.length;i+=4){r+=d[i];g+=d[i+1];b+=d[i+2];hash.push(Math.round((d[i]+d[i+1]+d[i+2])/3))}
-  cb({hash,color:[r/256,g/256,b/256]});
+  const c=document.createElement('canvas');c.width=32;c.height=32;
+  const ctx=c.getContext('2d');ctx.drawImage(img,0,0,32,32);
+  const d=ctx.getImageData(0,0,32,32).data;
+  let hash=[];let histR=[0,0,0,0],histG=[0,0,0,0],histB=[0,0,0,0];
+  let edges=0;
+  for(let i=0;i<d.length;i+=4){
+   let r=d[i],g=d[i+1],b=d[i+2];
+   hash.push(Math.round((r+g+b)/3));
+   histR[Math.floor(r/64)]++; histG[Math.floor(g/64)]++; histB[Math.floor(b/64)]++;
+   if(i>128){ edges+=Math.abs(d[i]-d[i-4]); }
+  }
+  cb({hash,color:histR.concat(histG).concat(histB),edges:edges/1024});
  };
  img.src=dataUrl;
 }
 function compararIA(h1,h2){
- if(!h1||!h2||!h1.hash||!h2.hash||h1.hash.length==0||h2.hash.length==0) return 5;
- let diff=0;
- for(let i=0;i<h1.hash.length;i++) diff+=Math.abs(h1.hash[i]-h2.hash[i]);
- let s=Math.max(0,100-diff/10);
- let cd=Math.abs(h1.color[0]-h2.color[0])+Math.abs(h1.color[1]-h2.color[1])+Math.abs(h1.color[2]-h2.color[2]);
- s-=cd/3;
- return Math.max(0,Math.min(98,s));
+ if(!h1||!h2||!h1.hash||h1.hash.length<100) return 0;
+ let diff=0; for(let i=0;i<1024;i++) diff+=Math.abs(h1.hash[i]-h2.hash[i]);
+ let scoreFoto=Math.max(0,100-diff/90);
+ let diffColor=0; for(let i=0;i<12;i++) diffColor+=Math.abs((h1.color[i]||0)-(h2.color[i]||0));
+ let scoreColor=Math.max(0,100-diffColor/2.5);
+ let diffEdge=Math.abs((h1.edges||0)-(h2.edges||0));
+ let scoreEdge=Math.max(0,100-diffEdge*1.8);
+ return Math.round(scoreFoto*0.55 + scoreColor*0.30 + scoreEdge*0.15);
 }
 function distancia(a,b){const R=6371;const dLat=(b.lat-a.lat)*Math.PI/180;const dLng=(b.lng-a.lng)*Math.PI/180;const h=Math.sin(dLat/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLng/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
 function scoreTotal(p,e){
