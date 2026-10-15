@@ -87,7 +87,6 @@ header{background:#111;color:#fff;padding:14px 20px;display:flex;justify-content
 .card.encontrado{opacity:.6;border-left:6px solid #43A047}
 .btn-flyer{background:#111;color:#ffe600;width:100%;padding:11px;border-radius:10px;border:none;font-weight:900;margin-top:6px;cursor:pointer}
 .btn-encontrado-lista{background:#43A047;color:#fff;width:100%;padding:11px;border-radius:10px;border:none;font-weight:900;margin-top:6px;cursor:pointer}
-/* AGREGADO WHATSAPP SANTI - 3 LINEAS */
 .hero-wsp{background:#111;color:#fff;padding:12px 14px;text-align:center;border-bottom:2px solid #ffe600}
 .btn-wsp-hero{background:#25D366;color:#fff;padding:12px 18px;border-radius:999px;font-weight:900;font-size:13px;text-decoration:none;display:inline-block;margin-top:8px}
 .btn-wsp-float{position:fixed;bottom:18px;right:18px;background:#25D366;width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;text-decoration:none;box-shadow:0 6px 20px rgba(0,0,0,.35);z-index:9999;border:3px solid #fff}
@@ -133,7 +132,7 @@ async function cargarDeSheet(){
   if(localStorage.getItem(KEY)){try{let loc=JSON.parse(localStorage.getItem(KEY));if(loc.some(x=>x.iaHash&&x.iaHash.hash&&x.iaHash.hash[0]>1))localStorage.removeItem(KEY);}catch(e){localStorage.removeItem(KEY);}}
   mascotas=[...delSheet,...mascotas.filter(l=>!delSheet.find(s=>s.id==l.id))];render();
   document.getElementById('ubiTxt').innerText='✅ '+delSheet.length+' del Sheet';
- }catch(e){render()}
+ }catch(e){render();document.getElementById('ubiTxt').innerText='📦 Solo local ('+mascotas.length+') - Sheet no conectado';}
 }
 cargarDeSheet();
 if(navigator.geolocation){navigator.geolocation.getCurrentPosition(p=>{userPos={lat:p.coords.latitude,lng:p.coords.longitude};document.getElementById('ubiTxt').innerText='📍 Ubicación lista';map.setView(userPos,14);render();},()=>render());}else render();
@@ -212,7 +211,7 @@ async function guardar(){
  let nueva={id:Date.now(),tipo:currentTipo,nombre:nombre,desc:desc,contacto:contacto,lat:tempLatLng.lat,lng:tempLatLng.lng,foto:tempFoto||'',iaHash:tempHash||{hash:[]},fecha:Date.now(),ciudad:CIUDAD_FILTRO,encontrado:false};
  mascotas.push(nueva);
  try{localStorage.setItem(KEY,JSON.stringify(mascotas));}catch(err){mascotas=mascotas.slice(-25);localStorage.setItem(KEY,JSON.stringify(mascotas));}
- try{await fetch(API_URL+'?action=add',{method:'POST',body:JSON.stringify(nueva)});}catch(e){}
+ try{await fetch(API_URL+'?action=add',{method:'POST',body:JSON.stringify(nueva)});document.getElementById('ubiTxt').innerText='✅ Subido al Sheet';}catch(e){document.getElementById('ubiTxt').innerText='⚠️ Solo local, Sheet no conectado';}
  closeModal('formModal');
  document.getElementById('fNombre').value='';document.getElementById('fDesc').value='';document.getElementById('fContacto').value='';document.getElementById('fFoto').value='';document.getElementById('fotoWrap').style.display='none';
  tempFoto=null;tempHash=null;filtro='TODOS';
@@ -338,6 +337,23 @@ function render(){
  if(filtradas.length==0)document.getElementById('lista').innerHTML='<p style="text-align:center;color:#999;margin-top:20px">No hay datos en '+CIUDAD_FILTRO+'</p>';
 }
 function copiarAlias(){navigator.clipboard.writeText('BUSCAPATASDONACION');alert('Copiado')}
+
+// === AGREGADO PARA ARREGLAR PANEL QUE DABA 0 ===
+async function migrar(){
+  let local = JSON.parse(localStorage.getItem(KEY)||'[]');
+  if(local.length==0){alert('No hay nada en local para migrar');return;}
+  if(!confirm('¿Subir '+local.length+' pruebas locales al Sheet para que aparezcan en el panel?'))return;
+  document.getElementById('ubiTxt').innerText='⏳ Migrando '+local.length+'...';
+  let ok=0;
+  for(let m of local){
+    try{
+      await fetch(API_URL+'?action=add',{method:'POST',body:JSON.stringify(m)});
+      ok++;
+    }catch(e){console.log('Fallo',m.id)}
+  }
+  alert('Listo, '+ok+' de '+local.length+' migrados al Sheet. Ahora abrí panel.html y recargá.');
+  cargarDeSheet();
+}
 </script>
 </body>
-</html>
+  </html>
