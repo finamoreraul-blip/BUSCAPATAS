@@ -87,19 +87,17 @@ header{background:#111;color:#fff;padding:14px 20px;display:flex;justify-content
 .card.encontrado{opacity:.6;border-left:6px solid #43A047}
 .btn-flyer{background:#111;color:#ffe600;width:100%;padding:11px;border-radius:10px;border:none;font-weight:900;margin-top:6px;cursor:pointer}
 .btn-encontrado-lista{background:#43A047;color:#fff;width:100%;padding:11px;border-radius:10px;border:none;font-weight:900;margin-top:6px;cursor:pointer}
-.hero-wsp{background:#111;color:#fff;padding:18px 16px 14px 16px;text-align:center;border-bottom:3px solid #ffe600}
-.hero-wsp h2{font-size:18px;font-weight:900;line-height:1.2}
-.hero-wsp h2 span{color:#ffe600}
-.btn-wsp-hero{display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:#fff;padding:16px 20px;border-radius:999px;font-weight:900;font-size:16px;text-decoration:none;margin:14px 0 6px 0;box-shadow:0 6px 18px rgba(37,211,102,.4)}
-.btn-wsp-float{position:fixed;bottom:18px;right:18px;background:#25D366;width:62px;height:62px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;color:#fff;text-decoration:none;box-shadow:0 6px 20px rgba(0,0,0,.35);z-index:9999;border:3px solid #fff}
+/* AGREGADO WHATSAPP SANTI - 3 LINEAS */
+.hero-wsp{background:#111;color:#fff;padding:12px 14px;text-align:center;border-bottom:2px solid #ffe600}
+.btn-wsp-hero{background:#25D366;color:#fff;padding:12px 18px;border-radius:999px;font-weight:900;font-size:13px;text-decoration:none;display:inline-block;margin-top:8px}
+.btn-wsp-float{position:fixed;bottom:18px;right:18px;background:#25D366;width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;text-decoration:none;box-shadow:0 6px 20px rgba(0,0,0,.35);z-index:9999;border:3px solid #fff}
 </style>
 </head>
 <body>
 <header><h1 id="tituloCiudad">🐾 BuscaPatas</h1><span id="ubiTxt">Form arreglado</span></header>
 <div class="hero-wsp">
-  <h2>¿PERDISTE O ENCONTRÁSTE UN PERRO EN <span>TRES ARROYOS</span>?</h2>
-  <a class="btn-wsp-hero" href="https://wa.me/5492983389710?text=Hola%20Fran!%20Perd%C3%AD%2Fencontr%C3%A9%20un%20perrito%20en%20Tres%20Arroyos.%20Te%20paso%20foto%20y%20barrio" target="_blank">💬 MANDAR POR WHATSAPP - MÁS RÁPIDO</a>
-  <div style="font-size:11px;color:#aaa;margin-top:6px">Te respondo yo mismo en minutos • 2983 389710 • Gratis</div>
+  <div style="font-size:13px;font-weight:800">¿PERDISTE UN PERRO EN TRES ARROYOS? <span style="color:#ffe600">MANDALO A SANTI</span></div>
+  <a class="btn-wsp-hero" href="https://wa.me/5492983389710?text=Hola%20Santi!%20Perd%C3%AD%2Fencontr%C3%A9%20un%20perrito%20en%20Tres%20Arroyos.%20Te%20paso%20foto%20y%20barrio" target="_blank">💬 WHATSAPP 2983 389710</a>
 </div>
 <div id="map"></div>
 <div class="top"><span id="filtroTxt">Tocá foto → ver datos, solo mapa</span><span id="contadorTxt" style="background:#111;color:#ffe600;padding:6px 10px;border-radius:99px;font-size:11px;font-weight:900">0 perdidos • 0 reencuentros</span></div>
@@ -109,7 +107,7 @@ header{background:#111;color:#fff;padding:14px 20px;display:flex;justify-content
 <div class="tabs"><button id="tab-TODOS" class="act" onclick="setFiltro('TODOS')">Todos</button><button id="tab-PERDIDO" onclick="setFiltro('PERDIDO')">Perdidos</button><button id="tab-ENCONTRADO" onclick="setFiltro('ENCONTRADO')">Encontr.</button><button id="tab-ABANDONADO" onclick="setFiltro('ABANDONADO')">Aband.</button></div>
 <div class="list" id="lista"></div>
 <canvas id="cvFlyer" width="1080" height="1920" style="display:none"></canvas>
-<a class="btn-wsp-float" href="https://wa.me/5492983389710?text=Hola%20Fran!%20Perd%C3%AD%2Fencontr%C3%A9%20un%20perrito" target="_blank">💬</a>
+<a class="btn-wsp-float" href="https://wa.me/5492983389710?text=Hola%20Santi!%20Perd%C3%AD%2Fencontr%C3%A9%20un%20perrito" target="_blank">💬</a>
 <div id="modalMapa" class="modal-bg"><div class="modal-box" style="text-align:center"><h2>📍 ¿Qué pasó acá?</h2><p id="coordTxt"></p><div class="opcionesMap"><button class="btn-perdido" onclick="desdeMapa('PERDIDO')">😢 PERDÍ acá</button><button class="btn-encontrado" onclick="desdeMapa('ENCONTRADO')">🙏 ENCONTRÉ acá</button><button class="btn-abandonado" onclick="desdeMapa('ABANDONADO')">💔 ABANDONADO acá</button><button class="btn-cancel" style="padding:12px;border-radius:12px;border:none" onclick="closeModal('modalMapa')">Cancelar</button></div></div></div>
 <div id="formModal" class="modal-bg"><div class="modal-box"><h2 id="formTitle" style="font-size:20px">Título</h2><p id="formSub" style="font-size:12px;color:#666;margin:6px 0 10px 0">Subtítulo donde tocaste</p><div class="form-group"><label>Nombre de la mascota <span>*</span></label><input id="fNombre" type="text" placeholder="Ej: Milo, Luna..." maxlength="30"><div id="errNombre" class="form-error">Poné un nombre</div></div><div class="form-group"><label>Descripción <span>color, tamaño, collar, señas</span></label><textarea id="fDesc" rows="3" placeholder="Ej: Caniche blanco, collar rojo, se perdió ayer..."></textarea></div><div class="form-row"><div class="form-group"><label>WhatsApp <span>* para que te contacten</span></label><input id="fContacto" type="tel" placeholder="Ej: 2983 123456" inputmode="numeric"><div id="errContacto" class="form-error">Poné tu WhatsApp</div></div></div><div class="form-group"><label>Foto 📸 <span>original sin compresión</span></label><input id="fFoto" type="file" accept="image/*" onchange="previewFoto(event)"><div class="fotoWrap" id="fotoWrap"><img id="fotoPrev"></div></div><div class="form-group"><label>Ubicación 📍 <span>donde tocaste en el mapa</span></label><div class="ubicacion-box"><span>📍</span><span id="fLatLngTexto" style="font-size:12px">Cargando...</span></div><input id="fLatLng" type="hidden"></div><div class="btns"><button class="btn-cancel" onclick="closeModal('formModal')">Cancelar</button><button class="btn-send" id="btnSend" onclick="guardar()">SUBIR AL MAPA</button></div></div></div>
 <div id="soloFotoModal" class="modal-bg"><div class="modal-box" style="text-align:center"><h2>📸 Solo foto - lee todos</h2><p>Perdidos + Encontrados + Abandonados</p><input id="fSoloFoto" type="file" accept="image/*" onchange="buscarSoloConFoto(event)"><div class="fotoWrap" id="fotoWrap2" style="display:none;margin-top:10px"><img id="fotoPrev2"></div><button class="btn-cancel" style="width:100%;margin-top:12px;padding:12px;border-radius:999px;border:none" onclick="closeModal('soloFotoModal')">Cerrar</button></div></div>
