@@ -6,26 +6,22 @@
 <title>Panel BuscaPatas</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui}
-body{background:#111;color:#fff;padding:16px}
-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-h1{font-size:18px}
-h1 span{color:#ffe600}
-#stats{background:#222;padding:12px;border-radius:12px;margin-bottom:12px;font-weight:900;color:#ffe600;text-align:center}
-input{width:100%;padding:12px;border-radius:10px;border:none;margin-bottom:12px}
+body{background:#111;color:#fff;padding:14px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+#stats{background:#222;padding:12px;border-radius:12px;margin-bottom:12px;font-weight:900;color:#ffe600;text-align:center;font-size:13px}
+input{width:100%;padding:12px;border-radius:10px;border:none;margin-bottom:12px;background:#fff;color:#111}
 .card{background:#fff;color:#111;border-radius:12px;padding:10px;display:flex;gap:10px;margin-bottom:10px;align-items:center}
-.card img{width:60px;height:60px;border-radius:10px;object-fit:cover}
-.card b{font-size:14px}
-.card small{font-size:11px;color:#666;display:block}
+.card img{width:58px;height:58px;border-radius:10px;object-fit:cover;background:#eee}
 .btns{display:flex;flex-direction:column;gap:6px;margin-left:auto}
-.btn-del{background:#e53935;color:#fff;border:none;padding:8px 12px;border-radius:8px;font-weight:900;cursor:pointer}
-.btn-wa{background:#25D366;color:#fff;border:none;padding:8px 12px;border-radius:8px;font-weight:700;cursor:pointer;text-decoration:none;text-align:center;font-size:12px}
+.btn-del{background:#e53935;color:#fff;border:none;padding:9px 12px;border-radius:8px;font-weight:900;cursor:pointer}
+.btn-wa{background:#25D366;color:#fff;border:none;padding:9px 12px;border-radius:8px;font-weight:700;text-decoration:none;text-align:center;font-size:12px}
+small{font-size:11px;color:#666;display:block;line-height:1.3}
 </style>
 </head>
 <body>
-<header><h1>🐾 Panel <span id="ciudadTxt"></span></h1><button onclick="cargar()" style="padding:8px 14px;border-radius:99px;border:none;font-weight:800">🔄 Recargar</button></header>
+<header><h1>🐾 Panel <span id="count"></span></h1><button onclick="cargar()" style="padding:8px 14px;border-radius:99px;border:none;font-weight:800;background:#ffe600">🔄 Recargar</button></header>
 <div id="stats">Cargando...</div>
-<input id="buscador" placeholder="Buscar por nombre, tipo, ciudad, teléfono..." oninput="filtrar()">
-
+<input id="buscador" placeholder="Buscar nombre, teléfono, ciudad..." oninput="filtrar()">
 <div id="lista"></div>
 
 <script>
@@ -33,19 +29,23 @@ const API_URL='https://script.google.com/macros/s/AKfycbwkSukpwgNRgEvkDwbCB-k3KB
 let datos=[];
 
 async function cargar(){
- document.getElementById('stats').innerText='⏳ Cargando del Sheet...';
+ document.getElementById('stats').innerText='⏳ Cargando...';
  try{
   const r=await fetch(API_URL+'?t='+Date.now());
   const d=await r.json();
   datos=d.map(row=>{
-    let hash=row.iaHash;
-    if(typeof hash==='string'){try{hash=JSON.parse(hash)}catch(e){hash={hash:[]}}}
     return {
-      id:row.id, tipo:row.tipo, nombre:row.nombre, desc:row.desc, contacto:row.contacto,
-      lat:row.lat, lng:row.lng, foto:row.foto, fecha:row.fecha, ciudad:row.ciudad||'Tres Arroyos', encontrado:row.encontrado
+      id: row.id,
+      tipo: row.tipo,
+      nombre: row.nombre,
+      desc: row.desc,
+      contacto: row.contacto,
+      foto: row.foto,
+      ciudad: row.ciudad||'Tres Arroyos',
+      fecha: row.fecha,
+      lat: row.lat
     }
-  }).filter(x=>x.lat);
-  document.getElementById('ciudadTxt').innerText='('+datos.length+')';
+  }).filter(x=>x.id);
   render(datos);
  }catch(e){
   document.getElementById('stats').innerText='❌ Error: '+e.message;
@@ -53,38 +53,40 @@ async function cargar(){
 }
 
 function render(lista){
- document.getElementById('stats').innerText=lista.length+' MASCOTAS - PERDIDOS: '+lista.filter(x=>x.tipo=='PERDIDO').length+' - ENCONTRADOS: '+lista.filter(x=>x.tipo=='ENCONTRADO').length+' - ABANDONADOS: '+lista.filter(x=>x.tipo=='ABANDONADO').length;
+ document.getElementById('count').innerText='('+lista.length+')';
+ document.getElementById('stats').innerText= lista.length+' total | PERDIDOS: '+lista.filter(x=>x.tipo=='PERDIDO').length+' | ENCONTRADOS: '+lista.filter(x=>x.tipo=='ENCONTRADO').length+' | ABANDONADOS: '+lista.filter(x=>x.tipo=='ABANDONADO').length;
  let html='';
  lista.slice().reverse().forEach(m=>{
    let foto=m.foto||'https://placehold.co/100?text=🐾';
+   let telLimpio=String(m.contacto||'').replace(/\D/g,'');
    let fecha=m.fecha?new Date(m.fecha).toLocaleString():'';
    html+=`<div class="card">
      <img src="${foto}">
      <div style="flex:1"><b>${m.tipo}: ${m.nombre}</b><small>${m.desc||''}</small><small>📱 ${m.contacto} | ${m.ciudad} | ${fecha}</small><small>ID: ${m.id}</small></div>
-     <div class="btns"><a class="btn-wa" href="https://wa.me/549${(m.contacto||'').replace(/\D/g,'')}" target="_blank">WA</a><button class="btn-del" onclick="borrar('${m.id}')">🗑️ Borrar</button></div>
+     <div class="btns"><a class="btn-wa" href="https://wa.me/549${telLimpio}" target="_blank">WA</a><button class="btn-del" onclick="borrar('${m.id}')">🗑️ Borrar</button></div>
    </div>`;
  });
- document.getElementById('lista').innerHTML=html||'<p style="text-align:center;color:#888;margin-top:30px">No hay datos</p>';
+ document.getElementById('lista').innerHTML=html||'<p style="text-align:center;color:#888;margin-top:20px">Vacío</p>';
 }
 
 function filtrar(){
  let q=document.getElementById('buscador').value.toLowerCase();
  if(!q){render(datos);return}
- let f=datos.filter(m=>(m.nombre+m.tipo+m.ciudad+m.contacto+m.desc).toLowerCase().includes(q));
+ let f=datos.filter(m=> (String(m.nombre)+String(m.tipo)+String(m.ciudad)+String(m.contacto)+String(m.desc)).toLowerCase().includes(q));
  render(f);
 }
 
 async function borrar(id){
- if(!confirm('¿Borrar ID '+id+'? No se puede deshacer')) return;
+ if(!confirm('¿Borrar ID '+id+'?')) return;
  document.getElementById('stats').innerText='⏳ Borrando '+id+'...';
  try{
-   await fetch(API_URL+'?action=delete',{method:'POST',mode:'no-cors',body:JSON.stringify({id})});
+   await fetch(API_URL+'?action=delete',{method:'POST',mode:'no-cors',body:JSON.stringify({id:id})});
    datos=datos.filter(x=>String(x.id)!=String(id));
    render(datos);
-   alert('✅ Borrado del Sheet. Recargá en 3 seg');
+   alert('✅ Borrado. Recargá en 2 seg');
    setTimeout(cargar,2000);
  }catch(e){
-   alert('❌ Error borrando: '+e.message);
+   alert('❌ Error: '+e.message);
  }
 }
 
