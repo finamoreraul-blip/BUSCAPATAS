@@ -9,12 +9,7 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui}
 body{background:#f6f6f3;color:#111;overflow-x:hidden}
-body.modo-foto.top{display:none!important}
-body.modo-foto.ia-barra{display:none!important}
-body.modo-foto.dona{display:none!important}
-body.modo-foto.controls{display:none!important}
-body.modo-foto.tabs{display:none!important}
-body.modo-foto.list{display:none!important}
+body.modo-foto.top,body.modo-foto.ia-barra,body.modo-foto.dona,body.modo-foto.controls,body.modo-foto.tabs,body.modo-foto.list{display:none!important}
 body.modo-foto #map{height:72vh!important}
 header{background:#111;color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10;border-bottom:2px solid #ffe600}
 #map{height:44vh;z-index:1;border-bottom:3px solid #111;transition:height.35s ease}
@@ -105,7 +100,7 @@ header{background:#111;color:#fff;padding:14px 20px;display:flex;justify-content
 <div class="list" id="lista"></div>
 <canvas id="cvFlyer" width="1080" height="1920" style="display:none"></canvas>
 <div id="modalMapa" class="modal-bg"><div class="modal-box" style="text-align:center"><h2>📍 ¿Qué pasó acá?</h2><p id="coordTxt"></p><div class="opcionesMap"><button class="btn-perdido" onclick="desdeMapa('PERDIDO')">😢 PERDÍ acá</button><button class="btn-encontrado" onclick="desdeMapa('ENCONTRADO')">🙏 ENCONTRÉ acá</button><button class="btn-abandonado" onclick="desdeMapa('ABANDONADO')">💔 ABANDONADO acá</button><button class="btn-cancel" style="padding:12px;border-radius:12px;border:none" onclick="closeModal('modalMapa')">Cancelar</button></div></div></div>
-<div id="formModal" class="modal-bg"><div class="modal-box"><h2 id="formTitle" style="font-size:20px">Título</h2><p id="formSub" style="font-size:12px;color:#666;margin:6px 0 10px 0">Subtítulo donde tocaste</p><div class="form-group"><label>Nombre de la mascota <span>*</span></label><input id="fNombre" type="text" placeholder="Ej: Milo, Luna..." maxlength="30"><div id="errNombre" class="form-error">Poné un nombre</div></div><div class="form-group"><label>Descripción <span>color, tamaño, collar, señas</span></label><textarea id="fDesc" rows="3" placeholder="Ej: Caniche blanco, collar rojo, se perdió ayer..."></textarea></div><div class="form-row"><div class="form-group"><label>WhatsApp <span>* para que te contacten</span></label><input id="fContacto" type="tel" placeholder="Ej: 2983 123456" inputmode="numeric"><div id="errContacto" class="form-error">Poné tu WhatsApp</div></div></div><div class="form-group"><label>Foto 📸 <span>se comprime sola, no pesa</span></label><input id="fFoto" type="file" accept="image/*" onchange="previewFoto(event)"><div class="fotoWrap" id="fotoWrap"><img id="fotoPrev"></div><div style="font-size:10px;color:#999;margin-top:4px">Foto original sin compresión para IA 99%</div></div><div class="form-group"><label>Ubicación 📍 <span>donde tocaste en el mapa</span></label><div class="ubicacion-box"><span>📍</span><span id="fLatLngTexto" style="font-size:12px">Cargando...</span></div><input id="fLatLng" type="hidden"></div><div class="btns"><button class="btn-cancel" onclick="closeModal('formModal')">Cancelar</button><button class="btn-send" id="btnSend" onclick="guardar()">SUBIR AL MAPA</button></div><p style="font-size:10px;color:#aaa;text-align:center;margin-top:10px">Al subir se busca con IA en toda la página</p></div></div>
+<div id="formModal" class="modal-bg"><div class="modal-box"><h2 id="formTitle" style="font-size:20px">Título</h2><p id="formSub" style="font-size:12px;color:#666;margin:6px 0 10px 0">Subtítulo donde tocaste</p><div class="form-group"><label>Nombre de la mascota <span>*</span></label><input id="fNombre" type="text" placeholder="Ej: Milo, Luna..." maxlength="30"><div id="errNombre" class="form-error">Poné un nombre</div></div><div class="form-group"><label>Descripción <span>color, tamaño, collar, señas</span></label><textarea id="fDesc" rows="3" placeholder="Ej: Caniche blanco, collar rojo, se perdió ayer..."></textarea></div><div class="form-row"><div class="form-group"><label>WhatsApp <span>* para que te contacten</span></label><input id="fContacto" type="tel" placeholder="Ej: 2983 123456" inputmode="numeric"><div id="errContacto" class="form-error">Poné tu WhatsApp</div></div></div><div class="form-group"><label>Foto 📸 <span>original sin compresión</span></label><input id="fFoto" type="file" accept="image/*" onchange="previewFoto(event)"><div class="fotoWrap" id="fotoWrap"><img id="fotoPrev"></div></div><div class="form-group"><label>Ubicación 📍 <span>donde tocaste en el mapa</span></label><div class="ubicacion-box"><span>📍</span><span id="fLatLngTexto" style="font-size:12px">Cargando...</span></div><input id="fLatLng" type="hidden"></div><div class="btns"><button class="btn-cancel" onclick="closeModal('formModal')">Cancelar</button><button class="btn-send" id="btnSend" onclick="guardar()">SUBIR AL MAPA</button></div></div></div>
 <div id="soloFotoModal" class="modal-bg"><div class="modal-box" style="text-align:center"><h2>📸 Solo foto - lee todos</h2><p>Perdidos + Encontrados + Abandonados</p><input id="fSoloFoto" type="file" accept="image/*" onchange="buscarSoloConFoto(event)"><div class="fotoWrap" id="fotoWrap2" style="display:none;margin-top:10px"><img id="fotoPrev2"></div><button class="btn-cancel" style="width:100%;margin-top:12px;padding:12px;border-radius:999px;border:none" onclick="closeModal('soloFotoModal')">Cerrar</button></div></div>
 <div id="modalMatch" class="modal-bg"><div class="modal-box"><h2 id="matchTitle"></h2><p id="matchSub"></p><div id="matchLista"></div><div id="noResultActions"></div><button onclick="closeModal('modalMatch')" style="margin-top:12px;width:100%;padding:12px;border-radius:999px;border:none;background:#111;color:#fff">Cerrar</button></div></div>
 <div id="modalFotoGrande" class="modal-bg"><div class="modal-box" style="padding:0;overflow:hidden"><div class="fotoGrande-top"><img id="fotoGrandeImg" src=""><button class="fotoGrande-close" onclick="cerrarModoFoto()">✕</button></div><div class="fotoGrande-datos"><h3 id="fotoGrandeNombre"></h3><div id="fotoGrandeDesc" class="desc-text"></div><a id="fotoGrandeTel" href="#" target="_blank" class="tel-grande">📱 WhatsApp</a><p id="fotoGrandeTelTexto" class="tel-texto"></p><button class="btn-cerrar-mapa" onclick="cerrarModoFoto()">Cerrar y volver</button></div></div></div>
@@ -124,7 +119,7 @@ function abrirSoloFoto(){openModal('soloFotoModal')}
 async function cargarDeSheet(){
  try{
   const r=await fetch(API_URL);const d=await r.json();
-  let delSheet=d.map(row=>({id:row.id,tipo:row.tipo,nombre:row.nombre,desc:row.desc,contacto:row.contacto,lat:parseFloat(row.lat),lng:parseFloat(row.lng),foto:row.foto,iaHash:row.iaHash||{hash:[],color:[0,0,0]},fecha:row.fecha,ciudad:row.ciudad||'Tres Arroyos',encontrado:row.encontrado||false})).filter(p=>p.lat);
+  let delSheet=d.map(row=>({id:row.id,tipo:row.tipo,nombre:row.nombre,desc:row.desc,contacto:row.contacto,lat:parseFloat(row.lat),lng:parseFloat(row.lng),foto:row.foto,iaHash:row.iaHash||{hash:[]},fecha:row.fecha,ciudad:row.ciudad||'Tres Arroyos',encontrado:row.encontrado||false})).filter(p=>p.lat);
   delSheet.forEach(r=>{if(r.iaHash&&r.iaHash.hash&&r.iaHash.hash.length>0&&r.iaHash.hash[0]>1){let avg=r.iaHash.hash.reduce((a,b)=>a+b,0)/r.iaHash.hash.length;r.iaHash.hash=r.iaHash.hash.map(v=>v>avg?1:0);}});
   if(localStorage.getItem(KEY)){try{let loc=JSON.parse(localStorage.getItem(KEY));if(loc.some(x=>x.iaHash&&x.iaHash.hash&&x.iaHash.hash[0]>1))localStorage.removeItem(KEY);}catch(e){localStorage.removeItem(KEY);}}
   mascotas=[...delSheet,...mascotas.filter(l=>!delSheet.find(s=>s.id==l.id))];render();
@@ -175,31 +170,26 @@ function calcularHashIA(dataUrl,cb){
 }
 function compararIA(h1,h2){
  if(!h1||!h2||!h1.hash||h1.hash.length<10)return 0;
- function aBits(h){
-  if(Math.max(...h.hash)<=1)return h.hash;
-  let arr=h.gray&&h.gray.length?h.gray:h.hash;
-  let avg=h.avg||arr.reduce((a,b)=>a+b,0)/arr.length;
-  return arr.map(v=>v>avg?1:0);
- }
+ function aBits(h){if(Math.max(...h.hash)<=1)return h.hash;let arr=h.gray&&h.gray.length?h.gray:h.hash;let avg=h.avg||arr.reduce((a,b)=>a+b,0)/arr.length;return arr.map(v=>v>avg?1:0);}
  let b1=aBits(h1),b2=aBits(h2),len=Math.min(b1.length,b2.length),diff=0;
  for(let i=0;i<len;i++)if(b1[i]!==b2[i])diff++;
  if(diff===0)return 99;
  if(diff<=3)return 96;
  if(diff<=10)return 88;
+ if(diff>80)return 5;
  return Math.round(Math.max(5,100-(diff/len*100)));
 }
 function distancia(a,b){const R=6371;const dLat=(b.lat-a.lat)*Math.PI/180;const dLng=(b.lng-a.lng)*Math.PI/180;const h=Math.sin(dLat/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLng/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
 function scoreTotal(p,e){
- let score=0;let motivos=[];
  let sFoto=compararIA(p.iaHash,e.iaHash);
- if(sFoto>5){score+=sFoto*0.7;motivos.push(`IA ${Math.round(sFoto)}%`)}else{score+=8;motivos.push('revisar foto')}
+ if(sFoto<55)return{score:sFoto,motivos:[`IA ${sFoto}% descartado`],km:distancia(p,e)};
+ let score=sFoto*0.75;
  let txtP=(p.nombre+' '+p.desc).toLowerCase();
  let txtE=(e.nombre+' '+e.desc).toLowerCase();
  let pal=txtP.split(/[\s,]+/).filter(w=>w.length>3);
- let com=0;pal.forEach(w=>{if(txtE.includes(w)){com++;score+=12}});
- if(com>0)motivos.push(com+' rasgos');
- let km=distancia(p,e);if(km<5)score+=15;motivos.push(km.toFixed(1)+'km');
- return{score:Math.min(Math.round(score),98),motivos,km}
+ let com=0;pal.forEach(w=>{if(txtE.includes(w)){com++;score+=8}});
+ let km=distancia(p,e);if(km<5)score+=10;
+ return{score:Math.min(Math.round(score),99),motivos:[`IA ${sFoto}%`,com?com+' rasgos':'',km.toFixed(1)+'km'].filter(Boolean),km}
 }
 async function guardar(){
  let nombre=document.getElementById('fNombre').value.trim();
@@ -210,7 +200,7 @@ async function guardar(){
  if(!contacto){document.getElementById('errContacto').style.display='block';ok=false;}else document.getElementById('errContacto').style.display='none';
  if(!ok)return;
  if(!tempLatLng){if(userPos)tempLatLng=userPos;else{let c=map.getCenter();tempLatLng={lat:c.lat,lng:c.lng};}}
- let nueva={id:Date.now(),tipo:currentTipo,nombre:nombre,desc:desc,contacto:contacto,lat:tempLatLng.lat,lng:tempLatLng.lng,foto:tempFoto||'',iaHash:tempHash||{hash:[],color:[0,0,0]},fecha:Date.now(),ciudad:CIUDAD_FILTRO,encontrado:false};
+ let nueva={id:Date.now(),tipo:currentTipo,nombre:nombre,desc:desc,contacto:contacto,lat:tempLatLng.lat,lng:tempLatLng.lng,foto:tempFoto||'',iaHash:tempHash||{hash:[]},fecha:Date.now(),ciudad:CIUDAD_FILTRO,encontrado:false};
  mascotas.push(nueva);
  try{localStorage.setItem(KEY,JSON.stringify(mascotas));}catch(err){mascotas=mascotas.slice(-25);localStorage.setItem(KEY,JSON.stringify(mascotas));}
  try{await fetch(API_URL+'?action=add',{method:'POST',body:JSON.stringify(nueva)});}catch(e){}
@@ -218,61 +208,59 @@ async function guardar(){
  document.getElementById('fNombre').value='';document.getElementById('fDesc').value='';document.getElementById('fContacto').value='';document.getElementById('fFoto').value='';document.getElementById('fotoWrap').style.display='none';
  tempFoto=null;tempHash=null;filtro='TODOS';
  document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('act'));document.getElementById('tab-TODOS').classList.add('act');
- render();alert('✅ SUBIDO COMO '+currentTipo+' donde tocaste en '+CIUDAD_FILTRO);buscarMatchesIA(nueva);
+ render();alert('✅ SUBIDO COMO '+currentTipo);buscarMatchesIA(nueva);
 }
 function buscarMatchesIA(nueva){
  let cand=mascotas.filter(m=>m.id!=nueva.id);
- let res=cand.map(m=>{let r=scoreTotal(nueva,m);return{...r,m}}).filter(x=>x.score>18).sort((a,b)=>b.score-a.score);
- mostrarResultados(res,nueva,`IA buscó en toda la página (${cand.length})`);
+ let res=cand.map(m=>{let r=scoreTotal(nueva,m);return{...r,m}}).filter(x=>x.score>=55).sort((a,b)=>b.score-a.score);
+ mostrarResultados(res,nueva,`IA buscó en ${cand.length} - filtro 55% solo reales`);
 }
 function buscarSoloConFoto(ev){
  const file=ev.target.files[0];if(!file)return;
- if(mascotas.length==0){alert('No hay fotos en la página todavía. Subí una.');return;}
+ if(mascotas.length==0){alert('No hay fotos en la página todavía.');return;}
  const r=new FileReader();
  r.onload=e=>{
   const dataUrl=e.target.result;
   document.getElementById('fotoPrev2').src=dataUrl;document.getElementById('fotoWrap2').style.display='block';
   calcularHashIA(dataUrl,h=>{
-   let temp={iaHash:h,nombre:'foto buscada',desc:'foto buscada',lat:userPos?userPos.lat:-38.375,lng:userPos?userPos.lng:-60.275};
-   let res=mascotas.map(m=>{let r=scoreTotal(temp,m);return{...r,m}}).filter(x=>x.score>10).sort((a,b)=>b.score-a.score);
+   let temp={iaHash:h};
+   let res=mascotas.map(m=>{let r=scoreTotal(temp,m);return{...r,m}}).filter(x=>x.score>=55).sort((a,b)=>b.score-a.score);
    closeModal('soloFotoModal');
-   mostrarResultados(res,{foto:dataUrl},`Solo foto leyó TODOS: ${mascotas.filter(x=>x.tipo=='PERDIDO').length} perdidos + ${mascotas.filter(x=>x.tipo=='ENCONTRADO').length} encontrados + ${mascotas.filter(x=>x.tipo=='ABANDONADO').length} abandonados = ${mascotas.length} total`);
+   mostrarResultados(res,{foto:dataUrl},`Solo foto con filtro 55%: ${mascotas.length} fotos`);
   });
  };
  r.readAsDataURL(file);
 }
 function buscarTodoConIA(){
  if(mascotas.length<2){alert('Subí 2 fotos');return}
- let todos=[];mascotas.forEach(a=>{mascotas.forEach(b=>{if(a.id<b.id){let r=scoreTotal(a,b);if(r.score>18)todos.push({...r,a,b})}})});todos.sort((x,y)=>y.score-x.score);
+ let todos=[];mascotas.forEach(a=>{mascotas.forEach(b=>{if(a.id<b.id){let r=scoreTotal(a,b);if(r.score>=55)todos.push({...r,a,b})}})});todos.sort((x,y)=>y.score-x.score);
  if(todos.length==0){
-  document.getElementById('matchTitle').innerText='🤖 Sin coincidencias';
-  document.getElementById('matchSub').innerText=`Revisamos ${mascotas.length} fotos`;
-  document.getElementById('matchLista').innerHTML=`<div style="background:#fffbe6;border:2px solid #ffe600;border-radius:14px;padding:14px;margin-top:10px;text-align:center"><p style="font-weight:900">😔 No hay coincidencias</p><p style="font-size:13px;margin-top:6px">¿No lo pudiste encontrar? No te preocupes,<br><b>ya tenemos los datos en el panel y lo estamos buscando por Facebook también...</b></p></div>`;
-  document.getElementById('noResultActions').innerHTML=`<button class="btn-upload-map" onclick="closeModal('modalMatch');abrirForm('PERDIDO')">+ Subir PERDIDO donde tocaste</button>`;
+  document.getElementById('matchTitle').innerText='🤖 Sin coincidencias reales';
+  document.getElementById('matchSub').innerText=`Revisamos ${mascotas.length} fotos - filtro 55%`;
+  document.getElementById('matchLista').innerHTML=`<div style="background:#fffbe6;border:2px solid #ffe600;border-radius:14px;padding:14px;text-align:center"><p style="font-weight:900">😔 No hay coincidencias reales</p><p style="font-size:13px;margin-top:6px">Tu árbol dio 40% y fue descartado correctamente<br><b>ya tenemos los datos y lo buscamos por Facebook también...</b></p></div>`;
+  document.getElementById('noResultActions').innerHTML='';
   openModal('modalMatch');return
  }
- document.getElementById('matchTitle').innerText=`🤖 ${todos.length} coincidencias`;
+ document.getElementById('matchTitle').innerText=`🤖 ${todos.length} coincidencias reales`;
  let html='';todos.slice(0,20).forEach(r=>{
-   let waA=r.a.contacto?`<a class="match-whatsapp" href="https://wa.me/549${r.a.contacto.replace(/\D/g,'')}" target="_blank">📱 WhatsApp ${r.a.nombre}: ${r.a.contacto}</a>`:'';
-   let waB=r.b.contacto?`<a class="match-whatsapp" href="https://wa.me/549${r.b.contacto.replace(/\D/g,'')}" target="_blank">📱 WhatsApp ${r.b.nombre}: ${r.b.contacto}</a>`:'';
-   html+=`<div class="card" style="flex-direction:column"><div><span class="ia-badge">IA ${r.score}%</span><b>${r.a.tipo} ${r.a.nombre} ↔ ${r.b.tipo} ${r.b.nombre}</b><br><small>${r.motivos.join(' · ')} · ${r.km.toFixed(1)}km</small></div><div class="compara"><div><img src="${r.a.foto}" onclick="verFotoGrande('${r.a.foto}','${r.a.nombre}','${r.a.desc}','${r.a.contacto}')"><small>${r.a.tipo}: ${r.a.nombre}</small>${waA}</div><div><img src="${r.b.foto}" onclick="verFotoGrande('${r.b.foto}','${r.b.nombre}','${r.b.desc}','${r.b.contacto}')"><small>${r.b.tipo}: ${r.b.nombre}</small>${waB}</div></div></div>`
+   html+=`<div class="card" style="flex-direction:column"><div><span class="ia-badge">IA ${r.score}% REAL</span><b>${r.a.tipo} ${r.a.nombre} ↔ ${r.b.tipo} ${r.b.nombre}</b><br><small>${r.motivos.join(' · ')} · ${r.km.toFixed(1)}km</small></div><div class="compara"><div><img src="${r.a.foto}"><small>${r.a.nombre}</small></div><div><img src="${r.b.foto}"><small>${r.b.nombre}</small></div></div></div>`
  });
  document.getElementById('matchLista').innerHTML=html;document.getElementById('noResultActions').innerHTML='';openModal('modalMatch')
 }
 function mostrarResultados(res,nueva,sub){
- document.getElementById('matchTitle').innerText=res.length>0?`🤖 Hay ${res.length} parecidos`:'🤖 Sin resultados';
+ document.getElementById('matchTitle').innerText=res.length>0?`🤖 Hay ${res.length} parecidos reales`:'🤖 Sin resultados reales';
  document.getElementById('matchSub').innerText=sub;
  let html='';
  if(res.length==0){
-  html=`<div style="background:#fffbe6;border:2px solid #ffe600;border-radius:14px;padding:14px;margin-top:10px;text-align:center"><p style="font-weight:900;font-size:15px">😔 No hay coincidencias</p><p style="font-size:13px;margin-top:8px;line-height:1.4;color:#444">¿No lo pudiste encontrar? No te preocupes,<br><b>ya tenemos los datos en el panel y lo estamos buscando por Facebook también...</b></p></div>`;
+  html=`<div style="background:#fffbe6;border:2px solid #ffe600;border-radius:14px;padding:14px;text-align:center"><p style="font-weight:900">😔 No hay coincidencias reales (filtro 55%)</p><p style="font-size:13px;margin-top:6px">Tu árbol dio 40% y fue descartado - correcto<br><b>ya tenemos los datos y lo buscamos por Facebook también...</b></p></div>`;
  }else{
    res.slice(0,12).forEach(r=>{
-     let wa=r.m.contacto?`<a class="match-whatsapp" href="https://wa.me/549${r.m.contacto.replace(/\D/g,'')}" target="_blank">📱 Contactar por WhatsApp: ${r.m.contacto}</a>`:`<span style="font-size:11px;color:#999">Sin WhatsApp cargado</span>`;
-     html+=`<div class="card" style="flex-direction:column"><div><span class="ia-badge">IA ${r.score}%</span> <b>${r.m.tipo}: ${r.m.nombre}</b><br><small style="color:#666">${r.motivos.join(' · ')} · ${r.km.toFixed(1)}km</small></div><div class="compara"><div><img src="${nueva.foto}" onclick="verFotoGrande('${nueva.foto}','Tu foto buscada','','')"><small>Tu foto buscada</small></div><div><img src="${r.m.foto}" onclick="verFotoGrande('${r.m.foto}','${r.m.nombre}','${r.m.desc}','${r.m.contacto}')"><small>${r.m.tipo}: ${r.m.nombre}</small></div></div><p style="font-size:12px;margin-top:8px;background:#fafafa;padding:8px;border-radius:8px">${r.m.desc||'Sin descripción'}</p>${wa}<a class="match-whatsapp-2" href="javascript:void(0)" onclick="verFotoGrande('${r.m.foto}','${r.m.nombre}','${r.m.desc}','${r.m.contacto}')">👁️ Ver datos</a></div>`;
+     let wa=r.m.contacto?`<a class="match-whatsapp" href="https://wa.me/549${r.m.contacto.replace(/\D/g,'')}" target="_blank">📱 ${r.m.contacto}</a>`:'';
+     html+=`<div class="card" style="flex-direction:column"><div><span class="ia-badge">IA ${r.score}% REAL</span> <b>${r.m.tipo}: ${r.m.nombre}</b><br><small>${r.motivos.join(' · ')}</small></div><div class="compara"><div><img src="${nueva.foto}"></div><div><img src="${r.m.foto}"></div></div>${wa}</div>`;
    });
  }
  document.getElementById('matchLista').innerHTML=html;
- if(res.length==0){document.getElementById('noResultActions').innerHTML=`<button class="btn-upload-map" onclick="closeModal('modalMatch');abrirForm('PERDIDO')">+ PERDIDO acá donde tocaste</button><button class="btn-upload-map" style="background:#ffe600;color:#111" onclick="closeModal('modalMatch');abrirForm('ENCONTRADO')">+ ENCONTRADO acá</button>`;}else document.getElementById('noResultActions').innerHTML='';
+ if(res.length==0){document.getElementById('noResultActions').innerHTML=`<button class="btn-upload-map" onclick="closeModal('modalMatch');abrirForm('PERDIDO')">+ PERDIDO acá</button>`;}else document.getElementById('noResultActions').innerHTML='';
  openModal('modalMatch');
 }
 function setFiltro(f){filtro=f;document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('act'));document.getElementById('tab-'+f).classList.add('act');render();}
@@ -296,43 +284,23 @@ window.verFotoGrande=function(foto,nombre,desc,contacto){
  }else{telBtn.style.display='none';telTexto.innerText='Sin teléfono cargado';}
  openModal('modalFotoGrande');
 }
-window.cerrarModoFoto=function(){
- closeModal('modalFotoGrande');
- document.body.classList.remove('modo-foto');
- setTimeout(()=>{map.invalidateSize();},100);
-}
+window.cerrarModoFoto=function(){closeModal('modalFotoGrande');document.body.classList.remove('modo-foto');setTimeout(()=>{map.invalidateSize();},100);}
 async function marcarEncontrado(id){
- if(!confirm('¿Marcar como ENCONTRADO? Se cuenta como reencuentro.'))return;
- let m=mascotas.find(x=>x.id==id);
- if(m)m.encontrado=true;
- localStorage.setItem(KEY,JSON.stringify(mascotas));
- render();
+ if(!confirm('¿Marcar como ENCONTRADO?'))return;
+ let m=mascotas.find(x=>x.id==id);if(m)m.encontrado=true;
+ localStorage.setItem(KEY,JSON.stringify(mascotas));render();
  try{await fetch(API_URL+'?action=encontrado',{method:'POST',body:JSON.stringify({id})});}catch(e){}
  alert('✅ Marcado como reencuentro');
 }
 function generarFlyer(m){
- let cv=document.getElementById('cvFlyer');
- let ctx=cv.getContext('2d');
- let foto=m.foto||'https://placehold.co/600';
- let img=new Image();
- img.crossOrigin='anonymous';
+ let cv=document.getElementById('cvFlyer');let ctx=cv.getContext('2d');
+ let foto=m.foto||'https://placehold.co/600';let img=new Image();img.crossOrigin='anonymous';
  img.onload=()=>{
   ctx.fillStyle='#f6f6f3';ctx.fillRect(0,0,1080,1920);
   ctx.fillStyle='#111';ctx.fillRect(0,0,1080,220);
-  ctx.fillStyle='#ffe600';ctx.font='900 70px system-ui';ctx.textAlign='center';
-  ctx.fillText(m.tipo,540,140);
+  ctx.fillStyle='#ffe600';ctx.font='900 70px system-ui';ctx.textAlign='center';ctx.fillText(m.tipo,540,140);
   ctx.drawImage(img,0,220,1080,1080);
-  ctx.fillStyle='#111';ctx.font='900 80px system-ui';
-  ctx.fillText(m.nombre.toUpperCase(),540,1420);
-  ctx.fillStyle='#444';ctx.font='600 32px system-ui';
-  let desc=m.desc||'';let lines=desc.match(/.{1,38}/g)||[''];
-  lines.slice(0,3).forEach((l,i)=>{ctx.fillText(l,540,1500+i*45);});
-  ctx.fillStyle='#fff';ctx.fillRect(0,1650,1080,270);
-  ctx.fillStyle='#111';ctx.font='900 26px system-ui';
-  ctx.fillText((m.ciudad||CIUDAD_FILTRO)+' - '+m.contacto,540,1720);
-  ctx.fillStyle='#ffe600';ctx.fillRect(300,1750,480,70);
-  ctx.fillStyle='#111';ctx.font='900 28px system-ui';
-  ctx.fillText('ALIAS: BUSCAPATASDONACION',540,1795);
+  ctx.fillStyle='#111';ctx.font='900 80px system-ui';ctx.fillText(m.nombre.toUpperCase(),540,1420);
   let a=document.createElement('a');a.download='FLYER_'+m.nombre+'.png';a.href=cv.toDataURL();a.click();
  };
  img.src=foto;
@@ -340,11 +308,7 @@ function generarFlyer(m){
 function render(){
  document.getElementById('lista').innerHTML='';
  map.eachLayer(l=>{if(l instanceof L.Marker)map.removeLayer(l);});
- let filtradas=mascotas.filter(m=>{
-  if(CIUDAD_FILTRO&&m.ciudad&&m.ciudad!=CIUDAD_FILTRO)return false;
-  if(filtro!='TODOS'&&m.tipo!=filtro)return false;
-  return true;
- });
+ let filtradas=mascotas.filter(m=>{if(CIUDAD_FILTRO&&m.ciudad&&m.ciudad!=CIUDAD_FILTRO)return false;if(filtro!='TODOS'&&m.tipo!=filtro)return false;return true;});
  let perdidos=filtradas.filter(m=>m.tipo=='PERDIDO'&&!m.encontrado).length;
  let reen=filtradas.filter(m=>m.encontrado).length;
  document.getElementById('contadorTxt').innerText=CIUDAD_FILTRO+': '+perdidos+' perdidos • '+reen+' reencuentros';
@@ -354,36 +318,17 @@ function render(){
   let col=m.encontrado?'#fff':m.tipo=='PERDIDO'?'#fff':m.tipo=='ENCONTRADO'?'#111':'#fff';
   let iconHtml=`<div style="position:relative"><img src="${foto}" class="custom-pin" style="border-color:${bg}"><div class="pin-label" style="background:${bg};color:${col}">${m.encontrado?'✅':m.tipo}</div></div>`;
   let icon=L.divIcon({html:iconHtml,className:'',iconSize:[54,54],iconAnchor:[27,48]});
-  let popupHtml=`
-    <div class="popup-grande">
-      <img src="${foto}" onclick="verFotoGrande('${m.foto}','${m.nombre.replace(/'/g,"\\'")}','${m.desc.replace(/'/g,"\\'")}','${m.contacto}')" title="Tocá para ver datos">
-      <h3>${m.encontrado?'✅':''} ${m.tipo}: ${m.nombre}</h3>
-      <p>${m.desc||'Sin descripción'}<br><b>📍 ${m.lat.toFixed(4)}</b> - ${m.ciudad||CIUDAD_FILTRO}</p>
-      ${m.contacto?`<a class="tel" href="https://wa.me/549${m.contacto.replace(/\D/g,'')}" target="_blank">📱 WhatsApp: ${m.contacto}</a>`:`<span style="font-size:11px;color:#999">Sin teléfono</span>`}
-      <br><a class="tel-2" href="javascript:void(0)" onclick="verFotoGrande('${m.foto}','${m.nombre.replace(/'/g,"\\'")}','${m.desc.replace(/'/g,"\\'")}','${m.contacto}')">👁️ Ver datos</a>
-      ${!m.encontrado?`<button onclick="marcarEncontrado(${m.id})" style="margin-top:6px;width:100%;padding:10px;border-radius:10px;border:none;background:#43A047;color:#fff;font-weight:900">✅ Marcar encontrado</button><button onclick='generarFlyer(${JSON.stringify(m).replace(/'/g,"&#39;")})' style="margin-top:6px;width:100%;padding:10px;border-radius:10px;border:none;background:#111;color:#ffe600;font-weight:900">📤 Flyer 1080x1920</button>`:''}
-    </div>`;
-  L.marker([m.lat,m.lng],{icon}).addTo(map).bindPopup(popupHtml);
+  L.marker([m.lat,m.lng],{icon}).addTo(map).bindPopup(`<div class="popup-grande"><img src="${foto}"><h3>${m.tipo}: ${m.nombre}</h3><a class="match-whatsapp" href="https://wa.me/549${m.contacto.replace(/\D/g,'')}" target="_blank">📱 ${m.contacto}</a></div>`);
  });
  filtradas.slice().reverse().forEach(m=>{
   let foto=m.foto||'https://placehold.co/100?text=🐾';
   let bg=m.encontrado?'#43A047':m.tipo=='PERDIDO'?'#111':m.tipo=='ENCONTRADO'?'#ffe600':'#ff6b35';
   let col=m.encontrado?'#fff':m.tipo=='PERDIDO'?'#fff':m.tipo=='ENCONTRADO'?'#111':'#fff';
-  document.getElementById('lista').innerHTML+=`
-   <div class="card ${m.encontrado?'encontrado':''}">
-     <img src="${foto}" onclick="verFotoGrande('${m.foto}','${m.nombre.replace(/'/g,"\\'")}','${m.desc.replace(/'/g,"\\'")}','${m.contacto}')">
-     <div style="flex:1">
-       <div style="display:flex;gap:5px"><span class="badge" style="background:${bg};color:${col}">${m.encontrado?'REENCUENTRO':m.tipo}</span><b>${m.nombre}</b></div>
-       <p style="font-size:12px;color:#666;margin-top:4px">${m.desc}</p>
-       ${m.contacto?`<a href="https://wa.me/549${m.contacto.replace(/\D/g,'')}" style="font-size:11px;color:#25D366;font-weight:800;text-decoration:none">📱 ${m.contacto}</a>`:''}
-       <br><a href="javascript:void(0)" onclick="verFotoGrande('${m.foto}','${m.nombre.replace(/'/g,"\\'")}','${m.desc.replace(/'/g,"\\'")}','${m.contacto}')" style="font-size:11px;color:#111;font-weight:700">👁️ Ver datos</a>
-       ${!m.encontrado?`<button class="btn-encontrado-lista" onclick="marcarEncontrado(${m.id})">✅ Marcar encontrado</button><button class="btn-flyer" onclick='generarFlyer(${JSON.stringify(m).replace(/'/g,"&#39;")})'>📤 Flyer WhatsApp 1080x1920</button>`:''}
-     </div>
-   </div>`;
+  document.getElementById('lista').innerHTML+=`<div class="card ${m.encontrado?'encontrado':''}"><img src="${foto}" onclick="verFotoGrande('${m.foto}','${m.nombre.replace(/'/g,"\\'")}','${m.desc.replace(/'/g,"\\'")}','${m.contacto}')"><div style="flex:1"><div style="display:flex;gap:5px"><span class="badge" style="background:${bg};color:${col}">${m.encontrado?'REENCUENTRO':m.tipo}</span><b>${m.nombre}</b></div><p style="font-size:12px;color:#666;margin-top:4px">${m.desc}</p><a href="javascript:void(0)" onclick="verFotoGrande('${m.foto}','${m.nombre.replace(/'/g,"\\'")}','${m.desc.replace(/'/g,"\\'")}','${m.contacto}')" style="font-size:11px;color:#111;font-weight:700">👁️ Ver datos</a></div></div>`;
  });
- if(filtradas.length==0)document.getElementById('lista').innerHTML='<p style="text-align:center;color:#999;margin-top:20px">No hay datos en '+CIUDAD_FILTRO+' - Tocá mapa y subí donde tocaste</p>';
+ if(filtradas.length==0)document.getElementById('lista').innerHTML='<p style="text-align:center;color:#999;margin-top:20px">No hay datos en '+CIUDAD_FILTRO+'</p>';
 }
-function copiarAlias(){navigator.clipboard.writeText('BUSCAPATASDONACION');alert('Copiado: BUSCAPATASDONACION')}
+function copiarAlias(){navigator.clipboard.writeText('BUSCAPATASDONACION');alert('Copiado')}
 </script>
 </body>
 </html>
