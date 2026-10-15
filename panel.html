@@ -3,94 +3,147 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Panel BuscaPatas</title>
+<title>Panel BuscaPatas - Admin</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui}
-body{background:#111;color:#fff;padding:14px}
-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-#stats{background:#222;padding:12px;border-radius:12px;margin-bottom:12px;font-weight:900;color:#ffe600;text-align:center;font-size:13px}
-input{width:100%;padding:12px;border-radius:10px;border:none;margin-bottom:12px;background:#fff;color:#111}
-.card{background:#fff;color:#111;border-radius:12px;padding:10px;display:flex;gap:10px;margin-bottom:10px;align-items:center}
-.card img{width:58px;height:58px;border-radius:10px;object-fit:cover;background:#eee}
-.btns{display:flex;flex-direction:column;gap:6px;margin-left:auto}
-.btn-del{background:#e53935;color:#fff;border:none;padding:9px 12px;border-radius:8px;font-weight:900;cursor:pointer}
-.btn-wa{background:#25D366;color:#fff;border:none;padding:9px 12px;border-radius:8px;font-weight:700;text-decoration:none;text-align:center;font-size:12px}
-small{font-size:11px;color:#666;display:block;line-height:1.3}
+body{background:#0f0f0f;color:#fff;padding:16px}
+header{background:#111;padding:16px;border-radius:16px;border:2px solid #ffe600;display:flex;justify-content:space-between;align-items:center;position:sticky;top:10px;z-index:10}
+#stats{background:#222;padding:10px 14px;border-radius:99px;font-size:12px;font-weight:900;color:#ffe600;border:1px solid #333}
+.tabs{display:flex;gap:8px;margin-top:16px;overflow-x:auto;padding-bottom:4px}
+.tabs button{padding:12px 16px;border-radius:999px;border:2px solid #333;background:#1a1a1a;color:#fff;font-weight:800;font-size:11px;cursor:pointer;white-space:nowrap}
+.tabs button.act{background:#ffe600;color:#111;border-color:#ffe600}
+.section-title{margin-top:22px;margin-bottom:8px;font-size:13px;font-weight:900;color:#ffe600;letter-spacing:1px}
+.list{padding-bottom:120px}
+.card{background:#fff;color:#111;border-radius:16px;padding:14px;margin-top:12px;display:flex;gap:12px;align-items:center;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.card img{width:72px;height:72px;border-radius:12px;object-fit:cover;background:#eee;flex-shrink:0}
+.card b{font-size:14px}
+.card small{font-size:11px;color:#666}
+.badge{font-size:10px;padding:5px 10px;border-radius:99px;font-weight:900;display:inline-block;margin-bottom:4px}
+.badge-PERDIDO{background:#111;color:#fff}
+.badge-ENCONTRADO{background:#ffe600;color:#111}
+.badge-ABANDONADO{background:#ff6b35;color:#fff}
+.badge-REENCONTRADO{background:#25D366;color:#fff}
+.actions{display:flex;flex-direction:column;gap:6px;margin-left:auto}
+.actions button{padding:9px 13px;border-radius:999px;border:none;font-weight:900;font-size:10px;cursor:pointer}
+.btn-del{background:#e53935;color:#fff}
+.btn-ok{background:#25D366;color:#fff}
+.btn-no{background:#eee;color:#111}
+.empty{text-align:center;color:#666;margin-top:30px;font-size:13px}
+.btn-clear{width:100%;margin-top:20px;padding:16px;background:#1a1a1a;color:#ffe600;border:2px dashed #ffe600;border-radius:14px;font-weight:900;cursor:pointer}
 </style>
 </head>
 <body>
-<header><h1>🐾 Panel <span id="count"></span></h1><button onclick="cargar()" style="padding:8px 14px;border-radius:99px;border:none;font-weight:800;background:#ffe600">🔄 Recargar</button></header>
-<div id="stats">Cargando...</div>
-<input id="buscador" placeholder="Buscar nombre, teléfono, ciudad..." oninput="filtrar()">
-<div id="lista"></div>
+<header><div><h1 style="font-size:18px">🐾 Panel BuscaPatas</h1><div style="font-size:10px;color:#aaa">ADMIN TRES ARROYOS</div></div><span id="stats">Cargando...</span></header>
+
+<div class="tabs">
+<button id="tab-TODOS" class="act" onclick="setFiltro('TODOS')">TODOS</button>
+<button id="tab-PERDIDO" onclick="setFiltro('PERDIDO')">PERDIDOS</button>
+<button id="tab-ENCONTRADO" onclick="setFiltro('ENCONTRADO')">ENCONTRADOS</button>
+<button id="tab-ABANDONADO" onclick="setFiltro('ABANDONADO')">ABANDONADOS</button>
+<button id="tab-REENCONTRADO" onclick="setFiltro('REENCONTRADO')">REENCONTRADOS</button>
+</div>
+
+<div id="lista" class="list"></div>
+<button class="btn-clear" onclick="limpiarLocal()">🧹 LIMPIAR LOCALSTORAGE (hacer 1 vez después de borrar)</button>
 
 <script>
 const API_URL='https://script.google.com/macros/s/AKfycbwkSukpwgNRgEvkDwbCB-k3KBsRevo7KMZDxaV9KeXrTyvHBq1tad5Sou5iKRB4AHGNRg/exec';
-let datos=[];
+let datos=[]; let filtro='TODOS';
 
 async function cargar(){
  document.getElementById('stats').innerText='⏳ Cargando...';
  try{
-  const r=await fetch(API_URL+'?t='+Date.now());
-  const d=await r.json();
-  datos=d.map(row=>{
-    return {
-      id: row.id,
-      tipo: row.tipo,
-      nombre: row.nombre,
-      desc: row.desc,
-      contacto: row.contacto,
-      foto: row.foto,
-      ciudad: row.ciudad||'Tres Arroyos',
-      fecha: row.fecha,
-      lat: row.lat
-    }
-  }).filter(x=>x.id);
-  render(datos);
- }catch(e){
-  document.getElementById('stats').innerText='❌ Error: '+e.message;
- }
+  const r=await fetch(API_URL);
+  datos=await r.json();
+  render();
+  document.getElementById('stats').innerText='✅ '+datos.length+' total';
+ }catch(e){document.getElementById('stats').innerText='❌ Error '+e.message}
+}
+cargar();
+
+function setFiltro(f){
+ filtro=f;
+ document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('act'));
+ document.getElementById('tab-'+f).classList.add('act');
+ render();
 }
 
-function render(lista){
- document.getElementById('count').innerText='('+lista.length+')';
- document.getElementById('stats').innerText= lista.length+' total | PERDIDOS: '+lista.filter(x=>x.tipo=='PERDIDO').length+' | ENCONTRADOS: '+lista.filter(x=>x.tipo=='ENCONTRADO').length+' | ABANDONADOS: '+lista.filter(x=>x.tipo=='ABANDONADO').length;
- let html='';
- lista.slice().reverse().forEach(m=>{
-   let foto=m.foto||'https://placehold.co/100?text=🐾';
-   let telLimpio=String(m.contacto||'').replace(/\D/g,'');
-   let fecha=m.fecha?new Date(m.fecha).toLocaleString():'';
-   html+=`<div class="card">
-     <img src="${foto}">
-     <div style="flex:1"><b>${m.tipo}: ${m.nombre}</b><small>${m.desc||''}</small><small>📱 ${m.contacto} | ${m.ciudad} | ${fecha}</small><small>ID: ${m.id}</small></div>
-     <div class="btns"><a class="btn-wa" href="https://wa.me/549${telLimpio}" target="_blank">WA</a><button class="btn-del" onclick="borrar('${m.id}')">🗑️ Borrar</button></div>
-   </div>`;
+function render(){
+ const cont=document.getElementById('lista');
+ cont.innerHTML='';
+ let filtrados=datos.filter(m=>{
+   if(filtro=='TODOS') return true;
+   if(filtro=='REENCONTRADO') return m.encontrado==true;
+   if(m.encontrado) return false;
+   return m.tipo==filtro;
  });
- document.getElementById('lista').innerHTML=html||'<p style="text-align:center;color:#888;margin-top:20px">Vacío</p>';
-}
+ if(filtrados.length==0){cont.innerHTML=`<div class="empty">No hay nada en ${filtro}</div>`; return;}
 
-function filtrar(){
- let q=document.getElementById('buscador').value.toLowerCase();
- if(!q){render(datos);return}
- let f=datos.filter(m=> (String(m.nombre)+String(m.tipo)+String(m.ciudad)+String(m.contacto)+String(m.desc)).toLowerCase().includes(q));
- render(f);
+ let perd=datos.filter(x=>!x.encontrado && x.tipo=='PERDIDO').length;
+ let enc=datos.filter(x=>!x.encontrado && x.tipo=='ENCONTRADO').length;
+ let aban=datos.filter(x=>!x.encontrado && x.tipo=='ABANDONADO').length;
+ let reen=datos.filter(x=>x.encontrado).length;
+ cont.innerHTML=`<div style="font-size:11px;color:#888;padding:8px">📊 ${perd} perdidos | ${enc} encontrados | ${aban} abandonados | ${reen} reencontrados</div>`;
+
+ filtrados.slice().reverse().forEach(m=>{
+  let foto=m.foto||'https://placehold.co/100?text=🐾';
+  let tel=String(m.contacto||'');
+  let tipoReal=m.encontrado ? 'REENCONTRADO' : m.tipo;
+  let div=document.createElement('div');
+  div.className='card';
+  div.innerHTML=`
+    <img src="${foto}">
+    <div style="flex:1">
+      <span class="badge badge-${tipoReal}">${tipoReal}</span><br>
+      <b>${m.nombre}</b><br>
+      <small>${m.desc||''}</small><br>
+      <small>📱 ${tel} | ID: ${m.id}</small><br>
+      <small>📍 ${m.lat},${m.lng} | ${m.ciudad||''}</small>
+    </div>
+    <div class="actions">
+      ${!m.encontrado ? `<button class="btn-ok" onclick="marcarReencontrado('${m.id}')">✓ REENCONTRADO</button>` : `<button class="btn-no" onclick="desmarcarReencontrado('${m.id}')">↩ DESMARCAR</button>`}
+      <button class="btn-del" onclick="borrar('${m.id}')">BORRAR</button>
+    </div>`;
+  cont.appendChild(div);
+ });
 }
 
 async function borrar(id){
- if(!confirm('¿Borrar ID '+id+'?')) return;
+ if(!confirm('¿Borrar ID '+id+' para siempre?')) return;
  document.getElementById('stats').innerText='⏳ Borrando '+id+'...';
  try{
-   await fetch(API_URL+'?action=delete',{method:'POST',mode:'no-cors',body:JSON.stringify({id:id})});
-   datos=datos.filter(x=>String(x.id)!=String(id));
-   render(datos);
-   alert('✅ Borrado. Recargá en 2 seg');
-   setTimeout(cargar,2000);
- }catch(e){
-   alert('❌ Error: '+e.message);
- }
+  await fetch(API_URL+'?action=delete',{method:'POST',mode:'no-cors',body:JSON.stringify({id:id})});
+  datos=datos.filter(x=>String(x.id)!=String(id));
+  let local=[];try{local=JSON.parse(localStorage.getItem('buscapatas')||'[]')}catch(e){local=[]}
+  local=local.filter(x=>String(x.id)!=String(id));
+  localStorage.setItem('buscapatas',JSON.stringify(local));
+  render();
+  document.getElementById('stats').innerText='✅ Borrado '+id;
+ }catch(e){document.getElementById('stats').innerText='❌ Error borrando'}
 }
 
-cargar();
+async function marcarReencontrado(id){
+ if(!confirm('¿Marcar como REENCONTRADO?')) return;
+ try{
+  await fetch(API_URL+'?action=reencontrado',{method:'POST',mode:'no-cors',body:JSON.stringify({id:id,encontrado:true})});
+  let m=datos.find(x=>String(x.id)==String(id)); if(m) m.encontrado=true;
+  render();
+ }catch(e){alert('Error')}
+}
+
+async function desmarcarReencontrado(id){
+ try{
+  await fetch(API_URL+'?action=reencontrado',{method:'POST',mode:'no-cors',body:JSON.stringify({id:id,encontrado:false})});
+  let m=datos.find(x=>String(x.id)==String(id)); if(m) m.encontrado=false;
+  render();
+ }catch(e){alert('Error')}
+}
+
+function limpiarLocal(){
+ if(!confirm('¿Limpiar localStorage buscapatas en este navegador?')) return;
+ localStorage.removeItem('buscapatas');
+ alert('✅ Local limpio. Ahora el INDEX solo traerá lo del Sheet');
+}
 </script>
 </body>
 </html>
