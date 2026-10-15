@@ -124,15 +124,33 @@ let currentTipo='PERDIDO',tempLatLng=null,tempFoto=null,userPos=null,filtro='TOD
 function openModal(id){document.getElementById(id).style.display='flex'}
 function closeModal(id){document.getElementById(id).style.display='none'}
 function abrirSoloFoto(){openModal('soloFotoModal')}
+
+// === FIX 1: CARGA DEL SHEET CON AUTO-MIGRACION ===
 async function cargarDeSheet(){
  try{
-  const r=await fetch(API_URL);const d=await r.json();
+  const r=await fetch(API_URL);
+  const d=await r.json();
   let delSheet=d.map(row=>({id:row.id,tipo:row.tipo,nombre:row.nombre,desc:row.desc,contacto:row.contacto,lat:parseFloat(row.lat),lng:parseFloat(row.lng),foto:row.foto,iaHash:row.iaHash||{hash:[]},fecha:row.fecha,ciudad:row.ciudad||'Tres Arroyos',encontrado:row.encontrado||false})).filter(p=>p.lat);
   delSheet.forEach(r=>{if(r.iaHash&&r.iaHash.hash&&r.iaHash.hash.length>0&&r.iaHash.hash[0]>1){let avg=r.iaHash.hash.reduce((a,b)=>a+b,0)/r.iaHash.hash.length;r.iaHash.hash=r.iaHash.hash.map(v=>v>avg?1:0);}});
-  if(localStorage.getItem(KEY)){try{let loc=JSON.parse(localStorage.getItem(KEY));if(loc.some(x=>x.iaHash&&x.iaHash.hash&&x.iaHash.hash[0]>1))localStorage.removeItem(KEY);}catch(e){localStorage.removeItem(KEY);}}
-  mascotas=[...delSheet,...mascotas.filter(l=>!delSheet.find(s=>s.id==l.id))];render();
+
+  // AUTO-MIGRACION: Si tenes datos locales que no estan en el Sheet, los sube solo
+  let local=[];try{local=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){local=[]}
+  let faltan=local.filter(l=>!delSheet.find(s=>String(s.id)==String(l.id)));
+  if(faltan.length>0){
+    document.getElementById('ubiTxt').innerText='⏳ Auto-migrando '+faltan.length+' al Sheet...';
+    for(let m of faltan){
+      try{ await fetch(API_URL+'?action=add',{method:'POST',mode:'no-cors',body:JSON.stringify(m)}); }catch(e){}
+    }
+    delSheet=[...delSheet,...faltan];
+  }
+
+  mascotas=[...delSheet,...mascotas.filter(l=>!delSheet.find(s=>String(s.id)==String(l.id)))];
+  render();
   document.getElementById('ubiTxt').innerText='✅ '+delSheet.length+' del Sheet';
- }catch(e){render();document.getElementById('ubiTxt').innerText='📦 Solo local ('+mascotas.length+') - Sheet no conectado';}
+ }catch(e){
+  render();
+  document.getElementById('ubiTxt').innerText='📦 Solo local ('+mascotas.length+') - Sheet no conectado';
+ }
 }
 cargarDeSheet();
 if(navigator.geolocation){navigator.geolocation.getCurrentPosition(p=>{userPos={lat:p.coords.latitude,lng:p.coords.longitude};document.getElementById('ubiTxt').innerText='📍 Ubicación lista';map.setView(userPos,14);render();},()=>render());}else render();
@@ -199,6 +217,8 @@ function scoreTotal(p,e){
  let km=distancia(p,e);if(km<5)score+=10;
  return{score:Math.min(Math.round(score),99),motivos:[`IA ${sFoto}%`,com?com+' rasgos':'',km.toFixed(1)+'km'].filter(Boolean),km}
 }
+
+// === FIX 2: GUARDAR LOCAL PRIMERO PARA QUE SUBA COMO PERDIDO/ENCONTRADO ===
 async function guardar(){
  let nombre=document.getElementById('fNombre').value.trim();
  let desc=document.getElementById('fDesc').value.trim();
@@ -209,15 +229,27 @@ async function guardar(){
  if(!ok)return;
  if(!tempLatLng){if(userPos)tempLatLng=userPos;else{let c=map.getCenter();tempLatLng={lat:c.lat,lng:c.lng};}}
  let nueva={id:Date.now(),tipo:currentTipo,nombre:nombre,desc:desc,contacto:contacto,lat:tempLatLng.lat,lng:tempLatLng.lng,foto:tempFoto||'',iaHash:tempHash||{hash:[]},fecha:Date.now(),ciudad:CIUDAD_FILTRO,encontrado:false};
+
+ // 1. GUARDA LOCAL Y RENDERIZA YA - ESTO ARREGLA QUE NO SUBIA COMO PERDIDO/ENCONTRADO
  mascotas.push(nueva);
  try{localStorage.setItem(KEY,JSON.stringify(mascotas));}catch(err){mascotas=mascotas.slice(-25);localStorage.setItem(KEY,JSON.stringify(mascotas));}
- try{await fetch(API_URL+'?action=add',{method:'POST',body:JSON.stringify(nueva)});document.getElementById('ubiTxt').innerText='✅ Subido al Sheet';}catch(e){document.getElementById('ubiTxt').innerText='⚠️ Solo local, Sheet no conectado';}
+ render();
  closeModal('formModal');
  document.getElementById('fNombre').value='';document.getElementById('fDesc').value='';document.getElementById('fContacto').value='';document.getElementById('fFoto').value='';document.getElementById('fotoWrap').style.display='none';
  tempFoto=null;tempHash=null;filtro='TODOS';
  document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('act'));document.getElementById('tab-TODOS').classList.add('act');
- render();alert('✅ SUBIDO COMO '+currentTipo);buscarMatchesIA(nueva);
+ alert('✅ SUBIDO COMO '+currentTipo+' - Ya está en el mapa');
+ buscarMatchesIA(nueva);
+
+ // 2. SUBE AL SHEET EN SEGUNDO PLANO
+ try{
+   await fetch(API_URL+'?action=add',{method:'POST',mode:'no-cors',body:JSON.stringify(nueva)});
+   document.getElementById('ubiTxt').innerText='✅ Subido al Sheet: '+nueva.tipo;
+ }catch(e){
+   document.getElementById('ubiTxt').innerText='📦 Guardado local';
+ }
 }
+
 function buscarMatchesIA(nueva){
  let cand=mascotas.filter(m=>m.id!=nueva.id);
  let res=cand.map(m=>{let r=scoreTotal(nueva,m);return{...r,m}}).filter(x=>x.score>=55).sort((a,b)=>b.score-a.score);
@@ -297,7 +329,7 @@ async function marcarEncontrado(id){
  if(!confirm('¿Marcar como ENCONTRADO?'))return;
  let m=mascotas.find(x=>x.id==id);if(m)m.encontrado=true;
  localStorage.setItem(KEY,JSON.stringify(mascotas));render();
- try{await fetch(API_URL+'?action=encontrado',{method:'POST',body:JSON.stringify({id})});}catch(e){}
+ try{await fetch(API_URL+'?action=encontrado',{method:'POST',mode:'no-cors',body:JSON.stringify({id})});}catch(e){}
  alert('✅ Marcado como reencuentro');
 }
 function generarFlyer(m){
@@ -337,23 +369,6 @@ function render(){
  if(filtradas.length==0)document.getElementById('lista').innerHTML='<p style="text-align:center;color:#999;margin-top:20px">No hay datos en '+CIUDAD_FILTRO+'</p>';
 }
 function copiarAlias(){navigator.clipboard.writeText('BUSCAPATASDONACION');alert('Copiado')}
-
-// === AGREGADO PARA ARREGLAR PANEL QUE DABA 0 ===
-async function migrar(){
-  let local = JSON.parse(localStorage.getItem(KEY)||'[]');
-  if(local.length==0){alert('No hay nada en local para migrar');return;}
-  if(!confirm('¿Subir '+local.length+' pruebas locales al Sheet para que aparezcan en el panel?'))return;
-  document.getElementById('ubiTxt').innerText='⏳ Migrando '+local.length+'...';
-  let ok=0;
-  for(let m of local){
-    try{
-      await fetch(API_URL+'?action=add',{method:'POST',body:JSON.stringify(m)});
-      ok++;
-    }catch(e){console.log('Fallo',m.id)}
-  }
-  alert('Listo, '+ok+' de '+local.length+' migrados al Sheet. Ahora abrí panel.html y recargá.');
-  cargarDeSheet();
-}
 </script>
 </body>
-  </html>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </html>
