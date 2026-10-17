@@ -79,7 +79,7 @@ header{background:#111;color:#fff;padding:14px 20px;display:flex;justify-content
 
 <div id="modalMapa" class="modal-bg"><div class="modal-box" style="text-align:center"><h2>📍 ¿Qué pasó acá?</h2><p id="coordTxt"></p><div class="opcionesMap"><button class="btn-perdido" onclick="desdeMapa('PERDIDO')">😢 PERDÍ acá</button><button class="btn-encontrado" onclick="desdeMapa('ENCONTRADO')">🙏 ENCONTRÉ acá</button><button class="btn-abandonado" onclick="desdeMapa('ABANDONADO')">💔 ABANDONADO acá</button><button class="btn-cancel" style="padding:12px;border-radius:12px;border:none" onclick="closeModal('modalMapa')">Cancelar</button></div></div></div>
 
-<div id="formModal" class="modal-bg"><div class="modal-box"><h2 id="formTitle">Título</h2><div class="form-group"><label>Nombre *</label><input id="fNombre" type="text" placeholder="Ej: Milo"><div id="errNombre" class="form-error">Poné un nombre</div></div><div class="form-group"><label>Descripción</label><textarea id="fDesc" rows="3"></textarea></div><div class="form-group"><label>WhatsApp *</label><input id="fContacto" type="tel" placeholder="2983..."><div id="errContacto" class="form-error">Poné tu WhatsApp</div></div><div class="form-group"><label>Fotos (hasta 5) *</label><input id="fFoto" type="file" accept="image/*" multiple onchange="previewFoto(event)"><div class="fotoWrap" id="fotoWrap"></div><small style="font-size:10px;color:#888">Tocá para elegir varias fotos del mismo perro</small></div><div class="form-group"><label>Ubicación</label><div class="ubicacion-box"><span id="fLatLngTexto">Cargando...</span></div><input id="fLatLng" type="hidden"></div><div class="btns"><button class="btn-cancel" onclick="closeModal('formModal')">Cancelar</button><button class="btn-send" id="btnSend" onclick="guardar()">SUBIR AL MAPA</button></div></div></div>
+<div id="formModal" class="modal-bg"><div class="modal-box"><h2 id="formTitle">Título</h2><div class="form-group"><label>Nombre *</label><input id="fNombre" type="text" placeholder="Ej: Milo"></div><div class="form-group"><label>Descripción</label><textarea id="fDesc" rows="3"></textarea></div><div class="form-group"><label>WhatsApp *</label><input id="fContacto" type="tel" placeholder="2983..."></div><div class="form-group"><label>Fotos (hasta 5) *</label><input id="fFoto" type="file" accept="image/*" multiple onchange="previewFoto(event)"><div class="fotoWrap" id="fotoWrap"></div><small style="font-size:10px;color:#888">Tocá para elegir varias fotos del mismo perro</small></div><div class="form-group"><label>Ubicación</label><div class="ubicacion-box"><span id="fLatLngTexto">Cargando...</span></div><input id="fLatLng" type="hidden"></div><div class="btns"><button class="btn-cancel" onclick="closeModal('formModal')">Cancelar</button><button class="btn-send" id="btnSend" onclick="guardar()">SUBIR AL MAPA</button></div></div></div>
 
 <div id="soloFotoModal" class="modal-bg"><div class="modal-box" style="text-align:center"><h2>📸 Solo foto</h2><input id="fSoloFoto" type="file" accept="image/*" onchange="buscarSoloConFoto(event)"><div class="fotoWrap" id="fotoWrap2" style="display:none;margin-top:10px"><img id="fotoPrev2"></div><button class="btn-cancel" style="width:100%;margin-top:12px;padding:12px;border-radius:999px;border:none" onclick="closeModal('soloFotoModal')">Cerrar</button></div></div>
 
@@ -95,7 +95,7 @@ const map=L.map('map').setView([-38.375,-60.275],13);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
 
 let KEY='buscapatas';
-let mascotas=[];try{mascotas=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){mascotas=[]}
+let mascotas=[];try{mascotas=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){mascotas=[];try{localStorage.removeItem(KEY)}catch(e2){}}
 let currentTipo='PERDIDO',tempLatLng=null,tempFotos=[],userPos=null,filtro='TODOS',tempHash=null;
 let markers=[];
 let galeriaActual=[],indiceActual=0;
@@ -104,6 +104,17 @@ function openModal(id){document.getElementById(id).style.display='flex'}
 function closeModal(id){document.getElementById(id).style.display='none'}
 function abrirSoloFoto(){openModal('soloFotoModal')}
 function copiarAlias(){navigator.clipboard.writeText('BUSCAPATASDONACION');alert('Copiado: BUSCAPATASDONACION')}
+
+function guardarLocalSeguro(){
+  try{
+    localStorage.removeItem(KEY);
+    let sinFotos = mascotas.map(m=>({...m, fotos:[], foto:''}));
+    localStorage.setItem(KEY, JSON.stringify(sinFotos));
+  }catch(e){
+    console.error('No se pudo guardar local', e);
+    try{localStorage.removeItem(KEY)}catch(e2){}
+  }
+}
 
 async function cargarDeSheet(){
  try{
@@ -116,7 +127,7 @@ async function cargarDeSheet(){
    return {id:row.id,tipo:row.tipo,nombre:row.nombre,desc:row.desc,contacto:row.contacto,lat:parseFloat(row.lat),lng:parseFloat(row.lng),foto:row.foto,fotos:fotosArr,iaHash:row.iaHash||{hash:[]},fecha:row.fecha,ciudad:row.ciudad||'Tres Arroyos',encontrado:row.encontrado||false}
   }).filter(p=>p.lat);
   mascotas=delSheet;
-  localStorage.setItem(KEY,JSON.stringify(mascotas));
+  guardarLocalSeguro();
   render();
   document.getElementById('ubiTxt').innerText='✅ '+delSheet.length+' del Sheet';
  }catch(e){
@@ -156,8 +167,6 @@ function abrirForm(t){
  document.getElementById('fLatLng').value=txt;
  document.getElementById('fLatLngTexto').innerText=txt;
  document.getElementById('btnSend').innerText='SUBIR COMO '+t;
- document.getElementById('errNombre').style.display='none';
- document.getElementById('errContacto').style.display='none';
  tempFotos=[];
  document.getElementById('fotoWrap').innerHTML='';
  document.getElementById('fotoWrap').style.display='none';
@@ -211,8 +220,7 @@ function compararIA(h1,h2){
 function distancia(a,b){const R=6371;const dLat=(b.lat-a.lat)*Math.PI/180;const dLng=(b.lng-a.lng)*Math.PI/180;const h=Math.sin(dLat/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLng/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
 function scoreTotal(p,e){let sFoto=compararIA(p.iaHash,e.iaHash);if(sFoto<55)return{score:sFoto};let score=sFoto;let km=distancia(p,e);if(km<5)score+=10;return{score:Math.min(Math.round(score),99),km}}
 
-// CORREGIDO - No se cuelga nunca
-function comprimirFoto(dataUrl, maxW=800, calidad=0.7){
+function comprimirFoto(dataUrl, maxW=600, calidad=0.5){
   return new Promise(res=>{
     const img=new Image();
     img.onload=()=>{
@@ -229,31 +237,25 @@ function comprimirFoto(dataUrl, maxW=800, calidad=0.7){
   });
 }
 
-// CORREGIDO - Avisa con alert si falta algo y no se cuelga
 async function guardar(){
   try{
     const btn=document.getElementById('btnSend');
     btn.disabled=true;
     btn.innerText='SUBIENDO...';
-
     let nombre=document.getElementById('fNombre').value.trim();
     let desc=document.getElementById('fDesc').value.trim();
     let contacto=document.getElementById('fContacto').value.trim();
-
     if(!nombre){ alert('Poné un nombre'); btn.disabled=false; btn.innerText='SUBIR AL MAPA'; return; }
     if(!contacto){ alert('Poné tu WhatsApp'); btn.disabled=false; btn.innerText='SUBIR AL MAPA'; return; }
     if(tempFotos.length==0){ alert('Subí al menos 1 foto y esperá a que aparezca la miniatura'); btn.disabled=false; btn.innerText='SUBIR AL MAPA'; return; }
     if(!tempLatLng){ if(userPos) tempLatLng=userPos; else { let c=map.getCenter(); tempLatLng={lat:c.lat,lng:c.lng}; } }
-
     let fotosComprimidas=[];
     for(let f of tempFotos){
       fotosComprimidas.push(await comprimirFoto(f));
     }
-
     let nueva={id:Date.now(),tipo:currentTipo,nombre:nombre,desc:desc,contacto:contacto,lat:tempLatLng.lat,lng:tempLatLng.lng,foto:fotosComprimidas[0],fotos:fotosComprimidas,iaHash:tempHash||{hash:[]},fecha:Date.now(),ciudad:CIUDAD_FILTRO,encontrado:false};
-
     mascotas.push(nueva);
-    localStorage.setItem(KEY,JSON.stringify(mascotas));
+    guardarLocalSeguro();
     filtro='TODOS';
     document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('act'));
     document.getElementById('tab-TODOS').classList.add('act');
@@ -262,7 +264,6 @@ async function guardar(){
     document.getElementById('fNombre').value='';document.getElementById('fDesc').value='';document.getElementById('fContacto').value='';document.getElementById('fFoto').value='';document.getElementById('fotoWrap').style.display='none';
     tempFotos=[];tempHash=null;
     alert('✅ SUBIDO COMO '+currentTipo+' con '+nueva.fotos.length+' fotos');
-
     try{
       await fetch(API_URL,{
         method:'POST',
@@ -271,7 +272,6 @@ async function guardar(){
         body: JSON.stringify({action:'add', data:nueva})
       });
     }catch(e){ console.log('Error al subir al Sheet', e); }
-
     btn.disabled=false;
     btn.innerText='SUBIR AL MAPA';
   }catch(err){
