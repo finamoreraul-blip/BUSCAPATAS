@@ -211,6 +211,20 @@ function compararIA(h1,h2){
 function distancia(a,b){const R=6371;const dLat=(b.lat-a.lat)*Math.PI/180;const dLng=(b.lng-a.lng)*Math.PI/180;const h=Math.sin(dLat/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLng/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
 function scoreTotal(p,e){let sFoto=compararIA(p.iaHash,e.iaHash);if(sFoto<55)return{score:sFoto};let score=sFoto;let km=distancia(p,e);if(km<5)score+=10;return{score:Math.min(Math.round(score),99),km}}
 
+function comprimirFoto(dataUrl, maxW=800, calidad=0.7){
+  return new Promise(res=>{
+    const img=new Image();
+    img.onload=()=>{
+      let w=img.width, h=img.height;
+      if(w>maxW){ h=h*maxW/w; w=maxW; }
+      const c=document.createElement('canvas'); c.width=w; c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      res(c.toDataURL('image/jpeg',calidad));
+    };
+    img.src=dataUrl;
+  });
+}
+
 async function guardar(){
  let nombre=document.getElementById('fNombre').value.trim();
  let desc=document.getElementById('fDesc').value.trim();
@@ -221,7 +235,13 @@ async function guardar(){
  if(!ok)return;
  if(tempFotos.length==0){alert('Subí al menos 1 foto'); return;}
  if(!tempLatLng){if(userPos)tempLatLng=userPos;else{let c=map.getCenter();tempLatLng={lat:c.lat,lng:c.lng};}}
- let nueva={id:Date.now(),tipo:currentTipo,nombre:nombre,desc:desc,contacto:contacto,lat:tempLatLng.lat,lng:tempLatLng.lng,foto:tempFotos[0],fotos:tempFotos,iaHash:tempHash||{hash:[]},fecha:Date.now(),ciudad:CIUDAD_FILTRO,encontrado:false};
+
+ let fotosComprimidas=[];
+ for(let f of tempFotos){
+   fotosComprimidas.push(await comprimirFoto(f));
+ }
+
+ let nueva={id:Date.now(),tipo:currentTipo,nombre:nombre,desc:desc,contacto:contacto,lat:tempLatLng.lat,lng:tempLatLng.lng,foto:fotosComprimidas[0],fotos:fotosComprimidas,iaHash:tempHash||{hash:[]},fecha:Date.now(),ciudad:CIUDAD_FILTRO,encontrado:false};
 
  mascotas.push(nueva);
  localStorage.setItem(KEY,JSON.stringify(mascotas));
@@ -233,7 +253,14 @@ async function guardar(){
  document.getElementById('fNombre').value='';document.getElementById('fDesc').value='';document.getElementById('fContacto').value='';document.getElementById('fFoto').value='';document.getElementById('fotoWrap').style.display='none';
  tempFotos=[];tempHash=null;
  alert('✅ SUBIDO COMO '+currentTipo+' con '+nueva.fotos.length+' fotos');
- try{await fetch(API_URL+'?action=add',{method:'POST',mode:'no-cors',body:JSON.stringify(nueva)});}catch(e){}
+ try{
+   await fetch(API_URL,{
+     method:'POST',
+     mode:'no-cors',
+     headers:{'Content-Type':'text/plain;charset=utf-8'},
+     body: JSON.stringify({action:'add', data:nueva})
+   });
+ }catch(e){ console.log('Error al subir al Sheet', e); }
 }
 
 function render(){
