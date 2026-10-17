@@ -98,7 +98,7 @@ let KEY='buscapatas';
 let mascotas=[];try{mascotas=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){mascotas=[];try{localStorage.removeItem(KEY)}catch(e2){}}
 let currentTipo='PERDIDO',tempLatLng=null,tempFotos=[],userPos=null,filtro='TODOS',tempHash=null;
 let markers=[];
-let galeriaActual=[],indiceActual=0;
+let galeriaActual=[],indiceActual=0,mascotaActualId=null;
 
 function openModal(id){document.getElementById(id).style.display='flex'}
 function closeModal(id){document.getElementById(id).style.display='none'}
@@ -296,7 +296,8 @@ function render(){
   let icon=L.divIcon({html:iconHtml,className:'',iconSize:[54,54],iconAnchor:[27,48]});
   let telLimpio=String(m.contacto||'').replace(/\D/g,'');
   let mk=L.marker([m.lat,m.lng],{icon}).addTo(map);
-  mk.bindPopup(`<b>${m.nombre}</b><br>${m.tipo}<br><a href="https://wa.me/549${telLimpio}" target="_blank">📱 ${m.contacto}</a>`);
+  mk.on('click', ()=> verFotoGrande(m.id));
+  mk.bindPopup(`<img src="${foto}" onclick="verFotoGrande('${m.id}')" style="width:100%;height:120px;object-fit:cover;border-radius:12px;margin-bottom:8px;cursor:pointer"><b>${m.nombre}</b><br>${m.tipo}<br><a href="https://wa.me/549${telLimpio}" target="_blank">📱 ${m.contacto}</a>`);
   markers.push(mk);
  });
  filtradas.slice().reverse().forEach(m=>{
@@ -323,6 +324,7 @@ function setFiltro(f){
 window.verFotoGrande=function(id){
   let m=mascotas.find(x=>String(x.id)==String(id));
   if(!m) return;
+  mascotaActualId = m.id;
   let fotosArr=m.fotos && m.fotos.length?m.fotos:(m.foto?[m.foto]:[]);
   galeriaActual=fotosArr;
   indiceActual=0;
@@ -330,7 +332,8 @@ window.verFotoGrande=function(id){
   openModal('modalFotoGrande');
 }
 function mostrarFotoActual(m){
-  if(galeriaActual.length==0) return;
+  if(!m || galeriaActual.length==0) return;
+  mascotaActualId = m.id;
   document.getElementById('fotoGrandeImg').src=galeriaActual[indiceActual];
   document.getElementById('fotoGrandeNombre').innerText=m.nombre;
   document.getElementById('fotoGrandeDesc').innerText=m.desc||'';
@@ -342,14 +345,10 @@ function mostrarFotoActual(m){
   document.getElementById('nextFoto').style.display=galeriaActual.length>1?'block':'none';
 }
 window.cambiarFoto=function(dir){
-  let mId=mascotas.find(x=>galeriaActual.includes(document.getElementById('fotoGrandeImg').src))?.id || mascotas.find(x=>x.nombre==document.getElementById('fotoGrandeNombre').innerText)?.id;
-  let m=mascotas.find(x=>String(x.id)==String(mId)) || mascotas.find(x=>x.nombre==document.getElementById('fotoGrandeNombre').innerText);
+  let m=mascotas.find(x=>String(x.id)==String(mascotaActualId));
+  if(!m || galeriaActual.length==0) return;
   indiceActual=(indiceActual+dir+galeriaActual.length)%galeriaActual.length;
-  if(m) mostrarFotoActual(m);
-  else {
-    document.getElementById('fotoGrandeImg').src=galeriaActual[indiceActual];
-    document.getElementById('fotoGrandeContador').innerText=(indiceActual+1)+'/'+galeriaActual.length;
-  }
+  mostrarFotoActual(m);
 }
 window.cerrarModoFoto=function(){closeModal('modalFotoGrande');}
 
@@ -391,4 +390,4 @@ window.buscarSoloConFoto=buscarSoloConFoto;
 window.closeModal=closeModal;
 </script>
 </body>
-</html>
+  </html>
