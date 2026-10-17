@@ -211,56 +211,74 @@ function compararIA(h1,h2){
 function distancia(a,b){const R=6371;const dLat=(b.lat-a.lat)*Math.PI/180;const dLng=(b.lng-a.lng)*Math.PI/180;const h=Math.sin(dLat/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLng/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
 function scoreTotal(p,e){let sFoto=compararIA(p.iaHash,e.iaHash);if(sFoto<55)return{score:sFoto};let score=sFoto;let km=distancia(p,e);if(km<5)score+=10;return{score:Math.min(Math.round(score),99),km}}
 
+// CORREGIDO - No se cuelga nunca
 function comprimirFoto(dataUrl, maxW=800, calidad=0.7){
   return new Promise(res=>{
     const img=new Image();
     img.onload=()=>{
-      let w=img.width, h=img.height;
-      if(w>maxW){ h=h*maxW/w; w=maxW; }
-      const c=document.createElement('canvas'); c.width=w; c.height=h;
-      c.getContext('2d').drawImage(img,0,0,w,h);
-      res(c.toDataURL('image/jpeg',calidad));
+      try{
+        let w=img.width, h=img.height;
+        if(w>maxW){ h=h*maxW/w; w=maxW; }
+        const c=document.createElement('canvas'); c.width=w; c.height=h;
+        c.getContext('2d').drawImage(img,0,0,w,h);
+        res(c.toDataURL('image/jpeg',calidad));
+      }catch(e){ res(dataUrl); }
     };
+    img.onerror=()=>res(dataUrl);
     img.src=dataUrl;
   });
 }
 
+// CORREGIDO - Avisa con alert si falta algo y no se cuelga
 async function guardar(){
- let nombre=document.getElementById('fNombre').value.trim();
- let desc=document.getElementById('fDesc').value.trim();
- let contacto=document.getElementById('fContacto').value.trim();
- let ok=true;
- if(!nombre){document.getElementById('errNombre').style.display='block';ok=false;}else document.getElementById('errNombre').style.display='none';
- if(!contacto){document.getElementById('errContacto').style.display='block';ok=false;}else document.getElementById('errContacto').style.display='none';
- if(!ok)return;
- if(tempFotos.length==0){alert('Subí al menos 1 foto'); return;}
- if(!tempLatLng){if(userPos)tempLatLng=userPos;else{let c=map.getCenter();tempLatLng={lat:c.lat,lng:c.lng};}}
+  try{
+    const btn=document.getElementById('btnSend');
+    btn.disabled=true;
+    btn.innerText='SUBIENDO...';
 
- let fotosComprimidas=[];
- for(let f of tempFotos){
-   fotosComprimidas.push(await comprimirFoto(f));
- }
+    let nombre=document.getElementById('fNombre').value.trim();
+    let desc=document.getElementById('fDesc').value.trim();
+    let contacto=document.getElementById('fContacto').value.trim();
 
- let nueva={id:Date.now(),tipo:currentTipo,nombre:nombre,desc:desc,contacto:contacto,lat:tempLatLng.lat,lng:tempLatLng.lng,foto:fotosComprimidas[0],fotos:fotosComprimidas,iaHash:tempHash||{hash:[]},fecha:Date.now(),ciudad:CIUDAD_FILTRO,encontrado:false};
+    if(!nombre){ alert('Poné un nombre'); btn.disabled=false; btn.innerText='SUBIR AL MAPA'; return; }
+    if(!contacto){ alert('Poné tu WhatsApp'); btn.disabled=false; btn.innerText='SUBIR AL MAPA'; return; }
+    if(tempFotos.length==0){ alert('Subí al menos 1 foto y esperá a que aparezca la miniatura'); btn.disabled=false; btn.innerText='SUBIR AL MAPA'; return; }
+    if(!tempLatLng){ if(userPos) tempLatLng=userPos; else { let c=map.getCenter(); tempLatLng={lat:c.lat,lng:c.lng}; } }
 
- mascotas.push(nueva);
- localStorage.setItem(KEY,JSON.stringify(mascotas));
- filtro='TODOS';
- document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('act'));
- document.getElementById('tab-TODOS').classList.add('act');
- render();
- closeModal('formModal');
- document.getElementById('fNombre').value='';document.getElementById('fDesc').value='';document.getElementById('fContacto').value='';document.getElementById('fFoto').value='';document.getElementById('fotoWrap').style.display='none';
- tempFotos=[];tempHash=null;
- alert('✅ SUBIDO COMO '+currentTipo+' con '+nueva.fotos.length+' fotos');
- try{
-   await fetch(API_URL,{
-     method:'POST',
-     mode:'no-cors',
-     headers:{'Content-Type':'text/plain;charset=utf-8'},
-     body: JSON.stringify({action:'add', data:nueva})
-   });
- }catch(e){ console.log('Error al subir al Sheet', e); }
+    let fotosComprimidas=[];
+    for(let f of tempFotos){
+      fotosComprimidas.push(await comprimirFoto(f));
+    }
+
+    let nueva={id:Date.now(),tipo:currentTipo,nombre:nombre,desc:desc,contacto:contacto,lat:tempLatLng.lat,lng:tempLatLng.lng,foto:fotosComprimidas[0],fotos:fotosComprimidas,iaHash:tempHash||{hash:[]},fecha:Date.now(),ciudad:CIUDAD_FILTRO,encontrado:false};
+
+    mascotas.push(nueva);
+    localStorage.setItem(KEY,JSON.stringify(mascotas));
+    filtro='TODOS';
+    document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('act'));
+    document.getElementById('tab-TODOS').classList.add('act');
+    render();
+    closeModal('formModal');
+    document.getElementById('fNombre').value='';document.getElementById('fDesc').value='';document.getElementById('fContacto').value='';document.getElementById('fFoto').value='';document.getElementById('fotoWrap').style.display='none';
+    tempFotos=[];tempHash=null;
+    alert('✅ SUBIDO COMO '+currentTipo+' con '+nueva.fotos.length+' fotos');
+
+    try{
+      await fetch(API_URL,{
+        method:'POST',
+        mode:'no-cors',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify({action:'add', data:nueva})
+      });
+    }catch(e){ console.log('Error al subir al Sheet', e); }
+
+    btn.disabled=false;
+    btn.innerText='SUBIR AL MAPA';
+  }catch(err){
+    alert('Error: '+err.message);
+    let btn=document.getElementById('btnSend');
+    if(btn){ btn.disabled=false; btn.innerText='SUBIR AL MAPA'; }
+  }
 }
 
 function render(){
